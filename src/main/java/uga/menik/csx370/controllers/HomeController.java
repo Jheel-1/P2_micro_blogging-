@@ -7,6 +7,7 @@ package uga.menik.csx370.controllers;
 
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
+import java.sql.SQLException;
 import java.util.List;
 
 import org.springframework.stereotype.Controller;
@@ -17,6 +18,8 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.servlet.ModelAndView;
 
 import uga.menik.csx370.models.Post;
+import uga.menik.csx370.services.PostService;
+import uga.menik.csx370.services.UserService;
 import uga.menik.csx370.utility.Utility;
 
 /**
@@ -25,6 +28,8 @@ import uga.menik.csx370.utility.Utility;
 @Controller
 @RequestMapping
 public class HomeController {
+    private final UserService userService;
+    private final PostService postService;
 
     /**
      * This is the specific function that handles the root URL itself.
@@ -33,6 +38,11 @@ public class HomeController {
      * The value to this parameter can be shown to the user as an error message.
      * See notes in HashtagSearchController.java regarding URL parameters.
      */
+    public HomeController(UserService userService, PostService postService) {
+        this.userService = userService;
+        this.postService = postService;
+    }
+
     @GetMapping
     public ModelAndView webpage(@RequestParam(name = "error", required = false) String error) {
         // See notes on ModelAndView in BookmarksController.java.
@@ -40,13 +50,26 @@ public class HomeController {
 
         // Following line populates sample data.
         // You should replace it with actual data from the database.
-        List<Post> posts = Utility.createSamplePostsListWithoutComments();
-        mv.addObject("posts", posts);
+          // Build feed: posts from users the logged-in user follows.
+        String currentUserId = userService.getLoggedInUser() != null
+                ? userService.getLoggedInUser().getUserId()
+                : null;
+        String errorMessage = error;
+        try {
+            List<Post> posts = postService.getFeedForUser(currentUserId);
+            mv.addObject("posts", posts == null ? List.of() : posts);
+            if (posts == null || posts.isEmpty()) {
+                mv.addObject("isNoContent", true);
+                mv.addObject("noContentMessage", "No posts are available right now.");
+            }
+        } catch (SQLException e) {
+            mv.addObject("posts", List.of());
+            errorMessage = "Unable to load posts. Please try again.";
+        }
 
         // If an error occured, you can set the following property with the
         // error message to show the error message to the user.
         // An error message can be optionally specified with a url query parameter too.
-        String errorMessage = error;
         mv.addObject("errorMessage", errorMessage);
 
         // Enable the following line if you want to show no content message.
@@ -70,6 +93,20 @@ public class HomeController {
 
         // Redirect the user if the post creation is a success.
         // return "redirect:/";
+
+        String currentUserId = userService.getLoggedInUser() != null
+                ? userService.getLoggedInUser().getUserId()
+                : null;
+        if (currentUserId != null) {
+            try {
+                postService.createPost(userService.getLoggedInUser(), postText);
+                return "redirect:/";
+            } catch (SQLException e) {
+                String message = URLEncoder.encode("Failed to create the post. Please try again.",
+                        StandardCharsets.UTF_8);
+                return "redirect:/?error=" + message;
+            }
+        }
 
         // Redirect the user with an error message if there was an error.
         String message = URLEncoder.encode("Failed to create the post. Please try again.",
