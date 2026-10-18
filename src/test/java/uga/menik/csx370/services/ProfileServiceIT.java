@@ -18,8 +18,8 @@ import uga.menik.csx370.models.Post;
 
 /**
  * Opt-in checks against MySQL, using only the existing project dependencies.
- * Run with -Dtest=ProfileServiceIT and the PROFILE_TEST_* environment variables
- * described in Readme.txt. Every test rolls its fixture data back.
+ * Run with -Dtest=ProfileServiceIT and the PROFILE_TEST_* environment variables.
+ * Every test rolls its fixture data back.
  */
 public class ProfileServiceIT extends TestCase {
 
