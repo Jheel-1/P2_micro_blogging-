@@ -20,6 +20,7 @@ import org.springframework.web.servlet.ModelAndView;
 import uga.menik.csx370.models.FollowableUser;
 import uga.menik.csx370.services.PeopleService;
 import uga.menik.csx370.services.UserService;
+import uga.menik.csx370.utility.Utility;
 
 /**
  * Handles /people URL and its sub URL paths.
@@ -28,14 +29,9 @@ import uga.menik.csx370.services.UserService;
 @RequestMapping("/people")
 public class PeopleController {
 
-    private final PeopleService peopleService;
-    private final UserService userService;
-
-    @Autowired
-    public PeopleController(PeopleService peopleService, UserService userService) {
-        this.peopleService = peopleService;
-        this.userService = userService;
-    }
+    // Inject UserService and PeopleService instances.
+    // See LoginController.java to see how to do this.
+    // Hint: Add a constructor with @Autowired annotation.
 
     /**
      * Serves the /people web page.
@@ -49,12 +45,12 @@ public class PeopleController {
         // See notes on ModelAndView in BookmarksController.java.
         ModelAndView mv = new ModelAndView("people_page");
 
-        String currentUserId = userService.getLoggedInUser() != null
-                ? userService.getLoggedInUser().getUserId()
-                : null;
-        List<FollowableUser> followableUsers = peopleService.getFollowableUsers(currentUserId);
+        // Following line populates sample data.
+        // You should replace it with actual data from the database.
+        // Use the PeopleService instance to find followable users.
+        // Use UserService to access logged in userId to exclude.
+        List<FollowableUser> followableUsers = Utility.createSampleFollowableUserList();
         mv.addObject("users", followableUsers);
-        mv.addObject("isNoContent", followableUsers.isEmpty());
 
         // If an error occured, you can set the following property with the
         // error message to show the error message to the user.
