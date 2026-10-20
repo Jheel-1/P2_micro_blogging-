@@ -1,0 +1,107 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="2700" height="1700" viewBox="0 0 2700 1700">
+<title>P2 Microblogging — current E–R model</title>
+<desc>Conceptual model matching the completed Plan B database_setup.sql: five strong entities, four many-to-many relationships, five many-to-one relationships, and nine resulting tables. Follows is recursive with follower/followee roles and a followedAt relationship attribute. The nullable notification target_id has no foreign key.</desc>
+<defs>
+<marker id="one" markerWidth="17" markerHeight="14" refX="16" refY="7" orient="auto" markerUnits="userSpaceOnUse"><path d="M0 0 L17 7 L0 14 Z" fill="#263644"/></marker>
+<style>
+.wire{fill:none;stroke:#263644;stroke-width:3.2;stroke-linejoin:round}
+.entity-box,.attribute-box{fill:white;stroke:#263644;stroke-width:3.2}
+.head,.diamond{fill:#deedf4;stroke:#263644;stroke-width:3.2}
+.entity-name{font:italic 38px Georgia,'Times New Roman',serif;fill:#17252f;text-anchor:middle}
+.attribute{font:italic 34px Georgia,'Times New Roman',serif;fill:#17252f}
+.relationship{font:italic 31px Georgia,'Times New Roman',serif;fill:#17252f;text-anchor:middle;dominant-baseline:middle}
+.role{font:italic 29px Georgia,'Times New Roman',serif;fill:#17252f;text-anchor:middle}
+.note{font:27px Arial,sans-serif;fill:#455a69}
+.small{font:25px Arial,sans-serif;fill:#455a69}
+.pk{text-decoration:underline;text-decoration-thickness:2px;text-underline-offset:5px}
+</style>
+</defs>
+<rect width="2700" height="1700" fill="white"/>
+<text x="90" y="76" font-family="Arial,sans-serif" font-size="52" font-weight="bold" fill="#223744">P2 Microblogging — E–R diagram</text>
+<text class="note" x="90" y="125">Current database design · Includes notifications · Five entity sets map to nine tables</text>
+<!-- Recursive many-to-many follows, with its relationship attribute. -->
+<path class="wire" d="M990 510 V440 H900 V300 H950" />
+<path class="wire" d="M1180 510 V440 H1270 V300 H1220" />
+<text class="role" x="922" y="480">follower</text>
+<text class="role" x="1255" y="480">followee</text>
+<path class="wire" d="M1085 245 V209 H1390" stroke-dasharray="11 9"/>
+<path class="diamond" d="M950 300 L1085 245 L1220 300 L1085 355 Z"/>
+<text class="relationship" x="1085" y="300">follows</text>
+<rect class="attribute-box" x="1390" y="179" width="225" height="60"/>
+<text class="attribute" x="1410" y="220">followedAt</text>
+<text class="small" x="1390" y="278">Relationship attribute</text>
+<!-- Notification has total participation in each of its two user relationships. -->
+<path class="wire" d="M420 566 H550 M420 574 H550" />
+<path class="wire" d="M800 570 H920" marker-end="url(#one)"/>
+<path class="wire" d="M420 726 H550 M420 734 H550" />
+<path class="wire" d="M800 730 H920" marker-end="url(#one)"/>
+<path class="diamond" d="M540 570 L670 520 L800 570 L670 620 Z"/>
+<text class="relationship" x="670" y="570">receives</text>
+<path class="diamond" d="M540 730 L670 680 L800 730 L670 780 Z"/>
+<text class="relationship" x="670" y="730">acts_in</text>
+<!-- Authorship is many-to-one, while likes and bookmarks are many-to-many. -->
+<path class="wire" d="M1605 570 H1250" marker-end="url(#one)"/>
+<path class="wire" d="M1865 566 H2220 M1865 574 H2220" />
+<path class="wire" d="M1250 690 H1605 M1875 690 H2220" />
+<path class="wire" d="M1250 810 H1605 M1875 810 H2220" />
+<path class="diamond" d="M1605 570 L1740 520 L1875 570 L1740 620 Z"/>
+<text class="relationship" x="1740" y="570">writes_post</text>
+<path class="diamond" d="M1605 690 L1740 640 L1875 690 L1740 740 Z"/>
+<text class="relationship" x="1740" y="690">likes</text>
+<path class="diamond" d="M1605 810 L1740 760 L1875 810 L1740 860 Z"/>
+<text class="relationship" x="1740" y="810">bookmarks</text>
+<!-- Each comment has one author and one parent post, both mandatory. -->
+<path class="wire" d="M1085 975 V840" marker-end="url(#one)"/>
+<path class="wire" d="M1081 1080 V1220 M1089 1080 V1220" />
+<path class="diamond" d="M915 1030 L1085 975 L1255 1030 L1085 1085 Z"/>
+<text class="relationship" x="1085" y="1030">writes_comment</text>
+<path class="wire" d="M1250 1326 H1617 M1250 1334 H1617" />
+<path class="wire" d="M1875 1330 H2100 V930 H2310 V840" marker-end="url(#one)"/>
+<path class="diamond" d="M1605 1330 L1740 1275 L1875 1330 L1740 1385 Z"/>
+<text class="relationship" x="1740" y="1330">on_post</text>
+<!-- Tagging is many-to-many and optional on both sides. -->
+<path class="wire" d="M2385 840 V975 M2385 1085 V1220" />
+<path class="diamond" d="M2250 1030 L2385 975 L2520 1030 L2385 1085 Z"/>
+<text class="relationship" x="2385" y="1030">tagged_with</text>
+<g id="notifications"><rect class="entity-box" x="90" y="510" width="330" height="330"/><rect class="head" x="90" y="510" width="330" height="55"/>
+<text class="entity-name" x="255" y="549">notifications</text>
+<text class="attribute pk" x="116" y="611">id</text>
+<text class="attribute" x="116" y="658">type</text>
+<text class="attribute" x="116" y="705">target_id</text>
+<text class="attribute" x="116" y="752">is_read</text>
+<text class="attribute" x="116" y="799">created_at</text>
+</g>
+<g id="user"><rect class="entity-box" x="920" y="510" width="330" height="330"/><rect class="head" x="920" y="510" width="330" height="55"/>
+<text class="entity-name" x="1085" y="549">user</text>
+<text class="attribute pk" x="946" y="611">userId</text>
+<text class="attribute" x="946" y="658">username</text>
+<text class="attribute" x="946" y="705">password</text>
+<text class="attribute" x="946" y="752">firstName</text>
+<text class="attribute" x="946" y="799">lastName</text>
+</g>
+<g id="post"><rect class="entity-box" x="2220" y="510" width="330" height="330"/><rect class="head" x="2220" y="510" width="330" height="55"/>
+<text class="entity-name" x="2385" y="549">post</text>
+<text class="attribute pk" x="2246" y="611">postId</text>
+<text class="attribute" x="2246" y="658">content</text>
+<text class="attribute" x="2246" y="705">timestamp</text>
+</g>
+<g id="comment"><rect class="entity-box" x="920" y="1220" width="330" height="230"/><rect class="head" x="920" y="1220" width="330" height="55"/>
+<text class="entity-name" x="1085" y="1259">comment</text>
+<text class="attribute pk" x="946" y="1321">commentId</text>
+<text class="attribute" x="946" y="1368">content</text>
+<text class="attribute" x="946" y="1415">timestamp</text>
+</g>
+<g id="hashtag"><rect class="entity-box" x="2220" y="1220" width="330" height="145"/><rect class="head" x="2220" y="1220" width="330" height="55"/>
+<text class="entity-name" x="2385" y="1259">hashtag</text>
+<text class="attribute pk" x="2246" y="1321">hashtag</text>
+</g>
+<text class="small" x="90" y="930">Each notification has one recipient</text>
+<text class="small" x="90" y="969">and one actor, both from user.</text>
+<text class="small" x="90" y="1035">The same user entity participates</text>
+<text class="small" x="90" y="1074">in both relationships.</text>
+<path d="M90 1510 H2610" stroke="#bacbd5" stroke-width="2"/>
+<text class="small" x="90" y="1550">Underlined attribute = primary key · Arrow toward an entity = at most one · Double line = total participation</text>
+<text class="small" x="90" y="1591">No arrows = many-to-many · Dashed connector = relationship attribute · username is unique; password stores a hash</text>
+<text class="small" x="90" y="1632">target_id is nullable and has no foreign key in the current schema, so no notification-target relationship is asserted.</text>
+<text class="small" x="90" y="1673">All five entity sets have independent keys. Counts, viewer flags, and last-post time are derived rather than stored attributes.</text>
+</svg>

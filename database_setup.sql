@@ -1,4 +1,7 @@
 -- Create the database.
+-- Run once on a fresh project database. This file does not delete existing data.
+-- All sample dates below are UTC; the app displays Eastern Time.
+SET time_zone = '+00:00';
 create database if not exists csx370_mb_platform;
 
 -- Use the created database.
@@ -101,3 +104,79 @@ create table if not exists notifications (
      foreign key (recipient_id) references user(userId) on delete cascade,
      foreign key (actor_id) references user(userId) on delete cascade
 );
+
+-- Demo data: final snapshot after the verified Chrome demonstration.
+-- All accounts are fictional and use DemoPass123!; passwords are BCrypt hashes.
+-- Export includes every row in every table, including read notification states.
+START TRANSACTION;
+INSERT INTO `user` (`userId`, `username`, `password`, `firstName`, `lastName`) VALUES (1,'alex','$2a$10$.4RX...B9Rw6msDG0AcifeZLaf8h7K3yEceXhSKi/pwx198juiSSy','Alex','Rivera');
+INSERT INTO `user` (`userId`, `username`, `password`, `firstName`, `lastName`) VALUES (2,'maya','$2a$10$.4RX...B9Rw6msDG0AcifeZLaf8h7K3yEceXhSKi/pwx198juiSSy','Maya','Chen');
+INSERT INTO `user` (`userId`, `username`, `password`, `firstName`, `lastName`) VALUES (3,'jordan','$2a$10$.4RX...B9Rw6msDG0AcifeZLaf8h7K3yEceXhSKi/pwx198juiSSy','Jordan','Brooks');
+INSERT INTO `user` (`userId`, `username`, `password`, `firstName`, `lastName`) VALUES (4,'sam','$2a$10$.4RX...B9Rw6msDG0AcifeZLaf8h7K3yEceXhSKi/pwx198juiSSy','Sam','Patel');
+INSERT INTO `user` (`userId`, `username`, `password`, `firstName`, `lastName`) VALUES (5,'demo_new_member','$2a$10$PH/RpfvtXpRCCqll8HdvROGQaK3OsMS5DwUjiGz1GE6RVFflQ4KPm','Taylor','Morgan');
+INSERT INTO `post` (`postId`, `userId`, `content`, `timestamp`) VALUES (1,1,'Studying database keys at the library. #database #study','2026-10-18 16:00:00');
+INSERT INTO `post` (`postId`, `userId`, `content`, `timestamp`) VALUES (2,1,'Thanks @maya for helping with our database diagram! #database #teamwork','2026-10-19 14:00:00');
+INSERT INTO `post` (`postId`, `userId`, `content`, `timestamp`) VALUES (3,2,'Our study group finished the first database practice set. #database #study','2026-10-19 15:30:00');
+INSERT INTO `post` (`postId`, `userId`, `content`, `timestamp`) VALUES (4,3,'A good morning walk around campus. #campus','2026-10-19 17:00:00');
+INSERT INTO `post` (`postId`, `userId`, `content`, `timestamp`) VALUES (5,2,'Looking forward to the campus fireworks. #2025 #fireworks','2026-10-19 18:00:00');
+INSERT INTO `post` (`postId`, `userId`, `content`, `timestamp`) VALUES (6,3,'Saved photos from last year. #2025 #memories','2026-10-19 18:00:00');
+INSERT INTO `post` (`postId`, `userId`, `content`, `timestamp`) VALUES (7,1,'Reviewing joins before the next quiz. #database #study','2026-10-20 16:00:00');
+INSERT INTO `post` (`postId`, `userId`, `content`, `timestamp`) VALUES (8,1,'Thanks @maya for the study notes! #database #study','2026-10-20 23:26:48');
+INSERT INTO `hashtag` (`hashtag`) VALUES ('2025');
+INSERT INTO `hashtag` (`hashtag`) VALUES ('campus');
+INSERT INTO `hashtag` (`hashtag`) VALUES ('database');
+INSERT INTO `hashtag` (`hashtag`) VALUES ('fireworks');
+INSERT INTO `hashtag` (`hashtag`) VALUES ('memories');
+INSERT INTO `hashtag` (`hashtag`) VALUES ('study');
+INSERT INTO `hashtag` (`hashtag`) VALUES ('teamwork');
+INSERT INTO `post_hashtag` (`postId`, `hashtag`) VALUES (5,'2025');
+INSERT INTO `post_hashtag` (`postId`, `hashtag`) VALUES (6,'2025');
+INSERT INTO `post_hashtag` (`postId`, `hashtag`) VALUES (4,'campus');
+INSERT INTO `post_hashtag` (`postId`, `hashtag`) VALUES (1,'database');
+INSERT INTO `post_hashtag` (`postId`, `hashtag`) VALUES (2,'database');
+INSERT INTO `post_hashtag` (`postId`, `hashtag`) VALUES (3,'database');
+INSERT INTO `post_hashtag` (`postId`, `hashtag`) VALUES (7,'database');
+INSERT INTO `post_hashtag` (`postId`, `hashtag`) VALUES (8,'database');
+INSERT INTO `post_hashtag` (`postId`, `hashtag`) VALUES (5,'fireworks');
+INSERT INTO `post_hashtag` (`postId`, `hashtag`) VALUES (6,'memories');
+INSERT INTO `post_hashtag` (`postId`, `hashtag`) VALUES (1,'study');
+INSERT INTO `post_hashtag` (`postId`, `hashtag`) VALUES (3,'study');
+INSERT INTO `post_hashtag` (`postId`, `hashtag`) VALUES (7,'study');
+INSERT INTO `post_hashtag` (`postId`, `hashtag`) VALUES (8,'study');
+INSERT INTO `post_hashtag` (`postId`, `hashtag`) VALUES (2,'teamwork');
+INSERT INTO `user_follow` (`followerId`, `followeeId`, `followedAt`) VALUES (1,2,'2026-10-18 12:00:00');
+INSERT INTO `user_follow` (`followerId`, `followeeId`, `followedAt`) VALUES (2,1,'2026-10-18 12:05:00');
+INSERT INTO `user_follow` (`followerId`, `followeeId`, `followedAt`) VALUES (3,1,'2026-10-18 12:10:00');
+INSERT INTO `user_follow` (`followerId`, `followeeId`, `followedAt`) VALUES (3,2,'2026-10-18 12:15:00');
+INSERT INTO `user_follow` (`followerId`, `followeeId`, `followedAt`) VALUES (4,2,'2026-10-19 12:00:00');
+INSERT INTO `comment` (`commentId`, `postId`, `userId`, `content`, `timestamp`) VALUES (1,1,2,'The examples with composite keys helped me too.','2026-10-18 16:05:00');
+INSERT INTO `comment` (`commentId`, `postId`, `userId`, `content`, `timestamp`) VALUES (2,1,3,'I will join the study group tomorrow.','2026-10-18 16:10:00');
+INSERT INTO `comment` (`commentId`, `postId`, `userId`, `content`, `timestamp`) VALUES (3,3,1,'Great work! Let us review foreign keys next.','2026-10-19 15:40:00');
+INSERT INTO `comment` (`commentId`, `postId`, `userId`, `content`, `timestamp`) VALUES (4,5,1,'Looking forward to seeing everyone there!','2026-10-20 23:26:48');
+INSERT INTO `likes` (`userId`, `postId`) VALUES (2,1);
+INSERT INTO `likes` (`userId`, `postId`) VALUES (3,1);
+INSERT INTO `likes` (`userId`, `postId`) VALUES (1,3);
+INSERT INTO `likes` (`userId`, `postId`) VALUES (2,4);
+INSERT INTO `likes` (`userId`, `postId`) VALUES (1,5);
+INSERT INTO `bookmarks` (`userId`, `postId`) VALUES (2,1);
+INSERT INTO `bookmarks` (`userId`, `postId`) VALUES (1,3);
+INSERT INTO `bookmarks` (`userId`, `postId`) VALUES (3,3);
+INSERT INTO `bookmarks` (`userId`, `postId`) VALUES (1,6);
+INSERT INTO `notifications` (`id`, `recipient_id`, `actor_id`, `type`, `target_id`, `is_read`, `created_at`) VALUES (1,2,1,'FOLLOW',1,1,'2026-10-18 12:00:00');
+INSERT INTO `notifications` (`id`, `recipient_id`, `actor_id`, `type`, `target_id`, `is_read`, `created_at`) VALUES (2,1,2,'FOLLOW',2,1,'2026-10-18 12:05:00');
+INSERT INTO `notifications` (`id`, `recipient_id`, `actor_id`, `type`, `target_id`, `is_read`, `created_at`) VALUES (3,1,3,'FOLLOW',3,1,'2026-10-18 12:10:00');
+INSERT INTO `notifications` (`id`, `recipient_id`, `actor_id`, `type`, `target_id`, `is_read`, `created_at`) VALUES (4,2,3,'FOLLOW',3,1,'2026-10-18 12:15:00');
+INSERT INTO `notifications` (`id`, `recipient_id`, `actor_id`, `type`, `target_id`, `is_read`, `created_at`) VALUES (5,1,2,'LIKE',1,0,'2026-10-18 16:02:00');
+INSERT INTO `notifications` (`id`, `recipient_id`, `actor_id`, `type`, `target_id`, `is_read`, `created_at`) VALUES (6,1,3,'LIKE',1,0,'2026-10-18 16:03:00');
+INSERT INTO `notifications` (`id`, `recipient_id`, `actor_id`, `type`, `target_id`, `is_read`, `created_at`) VALUES (7,1,2,'COMMENT',1,0,'2026-10-18 16:05:00');
+INSERT INTO `notifications` (`id`, `recipient_id`, `actor_id`, `type`, `target_id`, `is_read`, `created_at`) VALUES (8,1,3,'COMMENT',1,0,'2026-10-18 16:10:00');
+INSERT INTO `notifications` (`id`, `recipient_id`, `actor_id`, `type`, `target_id`, `is_read`, `created_at`) VALUES (9,2,4,'FOLLOW',4,1,'2026-10-19 12:00:00');
+INSERT INTO `notifications` (`id`, `recipient_id`, `actor_id`, `type`, `target_id`, `is_read`, `created_at`) VALUES (10,2,1,'MENTION',2,1,'2026-10-19 14:00:00');
+INSERT INTO `notifications` (`id`, `recipient_id`, `actor_id`, `type`, `target_id`, `is_read`, `created_at`) VALUES (11,2,1,'LIKE',3,1,'2026-10-19 15:35:00');
+INSERT INTO `notifications` (`id`, `recipient_id`, `actor_id`, `type`, `target_id`, `is_read`, `created_at`) VALUES (12,2,1,'COMMENT',3,1,'2026-10-19 15:40:00');
+INSERT INTO `notifications` (`id`, `recipient_id`, `actor_id`, `type`, `target_id`, `is_read`, `created_at`) VALUES (13,3,2,'LIKE',4,0,'2026-10-19 17:05:00');
+INSERT INTO `notifications` (`id`, `recipient_id`, `actor_id`, `type`, `target_id`, `is_read`, `created_at`) VALUES (14,3,1,'FOLLOW',1,0,'2026-10-20 23:26:47');
+INSERT INTO `notifications` (`id`, `recipient_id`, `actor_id`, `type`, `target_id`, `is_read`, `created_at`) VALUES (15,2,1,'LIKE',5,1,'2026-10-20 23:26:48');
+INSERT INTO `notifications` (`id`, `recipient_id`, `actor_id`, `type`, `target_id`, `is_read`, `created_at`) VALUES (16,2,1,'COMMENT',5,1,'2026-10-20 23:26:48');
+INSERT INTO `notifications` (`id`, `recipient_id`, `actor_id`, `type`, `target_id`, `is_read`, `created_at`) VALUES (17,2,1,'MENTION',8,1,'2026-10-20 23:26:48');
+COMMIT;
