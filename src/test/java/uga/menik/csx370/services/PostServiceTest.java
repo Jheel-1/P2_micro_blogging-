@@ -51,6 +51,18 @@ public class PostServiceTest extends TestCase {
         assertNull(sql);
     }
 
+    public void testPostValidationRejectsBlankUnicodeWhitespaceAndOverlongContent() throws Exception {
+        PostService posts = service();
+        for (String content : new String[] {null, "", " \t\r\n", "\u00a0\u2003", "x".repeat(401)}) {
+            try {
+                posts.createPost(new User("7", "Test", "Viewer"), content);
+                fail("Invalid content must be rejected before opening a database connection");
+            } catch (IllegalArgumentException expected) {
+                assertNull(sql);
+            }
+        }
+    }
+
     public void testInvalidSearchIsRejected() {
         for (String input : List.of("fireworks", "#", "#tag OR 1=1", "#tag.*")) {
             try {

@@ -99,6 +99,8 @@ public class HomeController {
             try {
                 postService.createPost(userService.getLoggedInUser(), postText);
                 return "redirect:/";
+            } catch (IllegalArgumentException e) {
+                return "redirect:/?error=" + URLEncoder.encode(e.getMessage(), StandardCharsets.UTF_8);
             } catch (SQLException e) {
                 String message = URLEncoder.encode("Failed to create the post. Please try again.",
                         StandardCharsets.UTF_8);

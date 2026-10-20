@@ -13,7 +13,6 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.servlet.ModelAndView;
 
 import uga.menik.csx370.models.Post;
-import uga.menik.csx370.utility.Utility;
 import uga.menik.csx370.services.PostService;
 
 /**
@@ -43,13 +42,15 @@ public class BookmarksController {
         // in the template using Java objects assigned to named properties.
         ModelAndView mv = new ModelAndView("posts_page");
 
-        // Following line populates sample data.
-        // You should replace it with actual data from the database.
-        // Page selection remains a starter placeholder owned by the page feature.
-        // Always reload selected posts so shared post features use real data.
-        List<Post> posts = postService.refreshPosts(Utility.createSamplePostsListWithoutComments());
-        mv.addObject("posts", posts);
-        mv.addObject("isNoContent", posts.isEmpty());
+        mv.addObject("posts", List.of());
+        mv.addObject("isNoContent", false);
+        try {
+            List<Post> posts = postService.getBookmarkedPosts();
+            mv.addObject("posts", posts);
+            mv.addObject("isNoContent", posts.isEmpty());
+        } catch (IllegalStateException e) {
+            mv.addObject("errorMessage", "Unable to load bookmarks. Please try again.");
+        }
 
         // If an error occured, you can set the following property with the
         // error message to show the error message to the user.

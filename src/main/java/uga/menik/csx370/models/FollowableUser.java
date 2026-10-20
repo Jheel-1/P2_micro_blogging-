@@ -71,7 +71,7 @@ public class FollowableUser extends User {
      *
      * @return the date and time that this user has last made a post.
      */
-    public String isLastActiveDate() {
+    public String getLastActiveDate() {
         return lastActiveDate;
     }
 

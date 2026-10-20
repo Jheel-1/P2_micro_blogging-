@@ -43,6 +43,12 @@ public class PostService {
 
     /** Create a post and persist its normalized hashtags in the same transaction. */
     public void createPost(User user, String content) throws SQLException {
+        if (content == null || content.codePoints().allMatch(c -> Character.isWhitespace(c) || Character.isSpaceChar(c))) {
+            throw new IllegalArgumentException("Post content cannot be empty.");
+        }
+        if (content.codePointCount(0, content.length()) > 400) {
+            throw new IllegalArgumentException("Posts must contain at most 400 characters.");
+        }
         String insertPostSql = "INSERT INTO post (userId, content, timestamp) "
                 + "VALUES (?, ?, CURRENT_TIMESTAMP)";
         try (Connection conn = dataSource.getConnection()) {
@@ -163,6 +169,13 @@ public class PostService {
     /** Fetch one post, including counts and the current viewer's saved states. */
     public List<Post> getPosts(String postId) {
         return queryPosts("WHERE p.postId = ?", List.of(postId));
+    }
+
+    public List<Post> getBookmarkedPosts() {
+        return queryPosts("WHERE EXISTS (SELECT 1 FROM bookmarks saved "
+                + "WHERE saved.postId = p.postId AND saved.userId = ?) "
+                + "ORDER BY p.timestamp DESC, p.postId DESC",
+                List.of(userService.getLoggedInUser().getUserId()));
     }
 
     /** Refresh the posts selected by another page without changing that page's selection rules. */

@@ -14,13 +14,13 @@ This is a project developed by Dr. Menik to give the students an opportunity to 
     <div class="user-follow">
         <div class="post-actions">
             {{^isFollowed}}
-            <form method="get" action="/people/{{userId}}/follow/true">
-                <button class="fa fa-user-plus"></button>
+            <form method="post" action="/people/{{userId}}/follow/true">
+                <button class="fa fa-user-plus" aria-label="Follow {{firstName}} {{lastName}}"></button>
             </form>
             {{/isFollowed}}
             {{#isFollowed}}
-            <form method="get" action="/people/{{userId}}/follow/false">
-                <button class="fa fa-user-minus"></button>
+            <form method="post" action="/people/{{userId}}/follow/false">
+                <button class="fa fa-user-minus" aria-label="Unfollow {{firstName}} {{lastName}}"></button>
             </form>
             {{/isFollowed}}
         </div>

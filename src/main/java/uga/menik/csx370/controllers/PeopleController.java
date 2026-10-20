@@ -13,6 +13,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.servlet.ModelAndView;
@@ -52,9 +53,15 @@ public class PeopleController {
         String currentUserId = userService.getLoggedInUser() != null
                 ? userService.getLoggedInUser().getUserId()
                 : null;
-        List<FollowableUser> followableUsers = peopleService.getFollowableUsers(currentUserId);
-        mv.addObject("users", followableUsers);
-        mv.addObject("isNoContent", followableUsers.isEmpty());
+        mv.addObject("users", List.of());
+        mv.addObject("isNoContent", false);
+        try {
+            List<FollowableUser> followableUsers = peopleService.getFollowableUsers(currentUserId);
+            mv.addObject("users", followableUsers);
+            mv.addObject("isNoContent", followableUsers.isEmpty());
+        } catch (IllegalStateException e) {
+            error = "Unable to load people. Please try again.";
+        }
 
         // If an error occured, you can set the following property with the
         // error message to show the error message to the user.
@@ -72,22 +79,23 @@ public class PeopleController {
     /**
      * This function handles user follow and unfollow.
      * Note the URL has parameters defined as variables ie: {userId} and {isFollow}.
-     * Follow and unfollow is handled by submitting a get type form to this URL 
+     * Follow and unfollow is handled by submitting a POST form to this URL
      * by specifing the userId and the isFollow variables.
      * Learn more here: https://www.w3schools.com/tags/att_form_method.asp
      * An example URL that is handled by this function looks like below:
      * http://localhost:8081/people/1/follow/false
      * The above URL assigns 1 to userId and false to isFollow.
      */
-    @GetMapping("{userId}/follow/{isFollow}")
+    @PostMapping("/{userId}/follow/{isFollow}")
     public String followUnfollowUser(@PathVariable("userId") String userId,
             @PathVariable("isFollow") Boolean isFollow) {
         System.out.println("User is attempting to follow/unfollow a user:");
         System.out.println("\tuserId: " + userId);
         System.out.println("\tisFollow: " + isFollow);
 
-        // Redirect the user if the comment adding is a success.
-        // return "redirect:/people";
+        if (peopleService.setFollowed(userService.getLoggedInUser().getUserId(), userId, isFollow)) {
+            return "redirect:/people";
+        }
 
         // Redirect the user with an error message if there was an error.
         String message = URLEncoder.encode("Failed to (un)follow the user. Please try again.",
