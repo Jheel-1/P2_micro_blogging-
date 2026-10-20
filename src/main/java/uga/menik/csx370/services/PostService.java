@@ -34,23 +34,64 @@ public class PostService {
 
     /** Fetch one post, including counts and the current viewer's saved states. */
     public List<Post> getPosts(String postId) {
-        List<Post> posts = new ArrayList<>();
+        return queryPosts("WHERE p.postId = ?", List.of(postId));
+    }
 
-        final String sql = 
+    /** Refresh the posts selected by another page without changing that page's selection rules. */
+    public List<Post> refreshPosts(List<Post> selectedPosts) {
+        if (selectedPosts.isEmpty()) {
+            return List.of();
+        }
+        List<String> ids = selectedPosts.stream().map(Post::getPostId).distinct().toList();
+        String slots = String.join(",", java.util.Collections.nCopies(ids.size(), "?"));
+        List<Post> loaded = queryPosts("WHERE p.postId IN (" + slots + ")", ids);
+        java.util.Map<String, Post> byId = new java.util.HashMap<>();
+        loaded.forEach(post -> byId.put(post.getPostId(), post));
+        List<Post> result = new ArrayList<>();
+        for (Post selected : selectedPosts) {
+            Post actual = byId.get(selected.getPostId());
+            if (actual != null) {
+                result.add(actual);
+            }
+        }
+        return result;
+    }
+
+    /** Require all distinct hashtag tokens and sort newest first. */
+    public List<Post> searchHashtags(String input) {
+        List<String> tags = Hashtags.parse(input);
+        if (tags.isEmpty()) {
+            return List.of();
+        }
+        String conditions = String.join(" AND ", java.util.Collections.nCopies(
+                tags.size(), "REGEXP_LIKE(p.content, ?, 'i')"));
+        List<String> patterns = tags.stream().map(Hashtags::sqlPattern).toList();
+        return queryPosts("WHERE " + conditions +
+                " ORDER BY p.timestamp DESC, p.postId DESC", patterns);
+    }
+
+    private static final String POST_SELECT = 
         "SELECT p.postId, p.userId, p.content, p.timestamp, u.firstName, u.lastName, " +
         "(SELECT COUNT(*) FROM likes l WHERE l.postId = p.postId) AS likesCount, " +
         "(SELECT COUNT(*) FROM comment c WHERE c.postId = p.postId) AS commentsCount, " +
         "EXISTS(SELECT 1 FROM likes l WHERE l.postId = p.postId AND l.userId = ?) AS isLiked, " +
         "EXISTS(SELECT 1 FROM bookmarks b WHERE b.postId = p.postId AND b.userId = ?) AS isBookmarked " + 
-        "FROM post p JOIN user u ON p.userId = u.userId " + 
-        "WHERE p.postId = ?";
+        "FROM post p JOIN user u ON p.userId = u.userId ";
+
+
+
+    private List<Post> queryPosts(String filter, List<String> parameters) {
+        List<Post> posts = new ArrayList<>();
+        final String sql = POST_SELECT + filter;
 
         try (Connection conn = dataSource.getConnection();
                 PreparedStatement pstmt = conn.prepareStatement(sql)) {
 
             pstmt.setString(1, userService.getLoggedInUser().getUserId());
             pstmt.setString(2, userService.getLoggedInUser().getUserId());
-            pstmt.setString(3, postId);
+            for (int i = 0; i < parameters.size(); i++) {
+                pstmt.setString(i + 3, parameters.get(i));
+            }
 
             try (ResultSet rs = pstmt.executeQuery()) {
                 while (rs.next()) {
@@ -75,7 +116,7 @@ public class PostService {
             }
 
         } catch (SQLException e) {
-            e.printStackTrace();
+            throw new IllegalStateException("Unable to load posts", e);
         }
 
         return posts;
@@ -117,8 +158,8 @@ public class PostService {
                 } // while
             }
         } catch (SQLException e) {
-            e.printStackTrace();
-        } // catch
+            throw new IllegalStateException("Unable to load comments", e);
+        }
 
         Post post = posts.get(0); // Assuming only one post is returned for the given postId
 

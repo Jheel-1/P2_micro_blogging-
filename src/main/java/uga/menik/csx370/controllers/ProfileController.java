@@ -17,6 +17,7 @@ import org.springframework.web.servlet.ModelAndView;
 import uga.menik.csx370.models.Post;
 import uga.menik.csx370.services.UserService;
 import uga.menik.csx370.utility.Utility;
+import uga.menik.csx370.services.PostService;
 
 /**
  * Handles /profile URL and its sub URLs.
@@ -27,14 +28,16 @@ public class ProfileController {
 
     // UserService has user login and registration related functions.
     private final UserService userService;
+    private final PostService postService;
 
     /**
      * See notes in AuthInterceptor.java regarding how this works 
      * through dependency injection and inversion of control.
      */
     @Autowired
-    public ProfileController(UserService userService) {
+    public ProfileController(UserService userService, PostService postService) {
         this.userService = userService;
+        this.postService = postService;
     }
 
     /**
@@ -62,8 +65,11 @@ public class ProfileController {
 
         // Following line populates sample data.
         // You should replace it with actual data from the database.
-        List<Post> posts = Utility.createSamplePostsListWithoutComments();
+        // Page selection remains a starter placeholder owned by the page feature.
+        // Always reload selected posts so shared post features use real data.
+        List<Post> posts = postService.refreshPosts(Utility.createSamplePostsListWithoutComments());
         mv.addObject("posts", posts);
+        mv.addObject("isNoContent", posts.isEmpty());
 
         // If an error occured, you can set the following property with the
         // error message to show the error message to the user.

@@ -14,7 +14,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.servlet.ModelAndView;
 
 import uga.menik.csx370.models.Post;
-import uga.menik.csx370.utility.Utility;
+import uga.menik.csx370.services.PostService;
 
 /**
  * Handles /hashtagsearch URL and possibly others.
@@ -23,6 +23,12 @@ import uga.menik.csx370.utility.Utility;
 @Controller
 @RequestMapping("/hashtagsearch")
 public class HashtagSearchController {
+    private final PostService postService;
+
+    public HashtagSearchController(PostService postService) {
+        this.postService = postService;
+    }
+
 
     /**
      * This function handles the /hashtagsearch URL itself.
@@ -32,15 +38,21 @@ public class HashtagSearchController {
      * Note: the value of the hashtags is URL encoded.
      */
     @GetMapping
-    public ModelAndView webpage(@RequestParam(name = "hashtags") String hashtags) {
+    public ModelAndView webpage(@RequestParam(name = "hashtags", defaultValue = "") String hashtags) {
         System.out.println("User is searching: " + hashtags);
 
         // See notes on ModelAndView in BookmarksController.java.
         ModelAndView mv = new ModelAndView("posts_page");
 
-        // Following line populates sample data.
-        // You should replace it with actual data from the database.
-        List<Post> posts = Utility.createSamplePostsListWithoutComments();
+        // Search real posts, requiring every supplied hashtag.
+        List<Post> posts;
+        try {
+            posts = postService.searchHashtags(hashtags);
+        } catch (IllegalArgumentException e) {
+            posts = List.of();
+            mv.addObject("errorMessage", e.getMessage());
+        }
+        mv.addObject("isNoContent", posts.isEmpty());
         mv.addObject("posts", posts);
 
         // If an error occured, you can set the following property with the
