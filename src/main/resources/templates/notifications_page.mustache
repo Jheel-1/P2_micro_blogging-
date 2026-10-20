@@ -3,30 +3,56 @@
 {{> fragments/html_header}}
 <body>
     {{> fragments/top_bar}}
-    <div class="container mt-4" style="max-width: 600px;">
+    <main class="container">
         <h2>Notifications</h2>
-        <hr>
+        <form action="/notifications" method="get" class="notification-filters">
+            <label>Activity
+                <select name="type" class="short-input">
+                    <option value="">All activity</option>
+                    {{#typeOptions}}
+                    <option value="{{value}}" {{#selected}}selected{{/selected}}>{{value}}</option>
+                    {{/typeOptions}}
+                </select>
+            </label>
+            <label><input type="checkbox" name="unread" value="true" {{#unreadOnly}}checked{{/unreadOnly}}> Unread only</label>
+            <button type="submit" class="action-button">Filter</button>
+        </form>
+        {{#hasUnreadNotifications}}
+        <form action="/notifications/read-all" method="post" class="notification-read-all">
+            <button type="submit" class="action-button">Mark all as read</button>
+        </form>
+        {{/hasUnreadNotifications}}
+        {{#notificationsLoaded}}
         {{#notifications}}
-            <div class="card mb-2 p-3 {{^isRead}}bg-light{{/isRead}}">
-                <div class="d-flex align-items-center">
-                    <img src="{{actor.profileImagePath}}" class="rounded-circle me-3" width="40" height="40" alt="Profile picture">
-                    <div>
-                        <a href="/profile/{{actor.userId}}" class="fw-bold text-decoration-none text-dark">{{actor.firstName}} {{actor.lastName}}</a>
-
-                        {{#isLike}}liked your post.{{/isLike}}
-                        {{#isComment}}commented on your post.{{/isComment}}
-                        {{#isFollow}}started following you.{{/isFollow}}
-                        {{#isMention}}mentioned you in a post.{{/isMention}}
-
-                        <div class="text-muted small">{{createdAt}}</div>
+            <article class="post framed notification {{^isRead}}notification-unread{{/isRead}}">
+                <img src="{{actor.profileImagePath}}" alt="Profile picture">
+                <div class="post-body">
+                    <a href="/profile/{{actor.userId}}">{{actor.firstName}} {{actor.lastName}}</a>
+                    {{#isLike}}liked your post.{{/isLike}}
+                    {{#isComment}}commented on your post.{{/isComment}}
+                    {{#isFollow}}started following you.{{/isFollow}}
+                    {{#isMention}}mentioned you in a post.{{/isMention}}
+                    <div class="post-date">{{createdAt}}</div>
+                    {{^isRead}}<span class="notification-status">Unread</span>{{/isRead}}
+                    <div class="notification-actions">
+                        {{#targetUrl}}
+                        <a href="{{targetUrl}}">{{#isFollow}}View profile{{/isFollow}}{{^isFollow}}View post{{/isFollow}}</a>
+                        {{/targetUrl}}
+                        {{^targetUrl}}<span>Post no longer available.</span>{{/targetUrl}}
+                        {{^isRead}}
+                        <form action="/notifications/{{id}}/read" method="post">
+                            <button type="submit" class="action-button">Mark as read</button>
+                        </form>
+                        {{/isRead}}
                     </div>
                 </div>
-            </div>
+            </article>
         {{/notifications}}
         {{^notifications}}
-            <p class="text-muted">No notifications yet.</p>
+            <p>No notifications match these filters.</p>
         {{/notifications}}
-    </div>
+        {{/notificationsLoaded}}
+    </main>
     {{> fragments/footer}}
 </body>
 </html>

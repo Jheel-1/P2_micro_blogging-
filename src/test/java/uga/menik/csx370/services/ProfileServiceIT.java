@@ -211,14 +211,17 @@ public class ProfileServiceIT extends TestCase {
         assertTrue(header.contains("badge"));
 
         var controller = new NotificationController(notifications, users);
-        assertEquals("notifications_page", controller.getNotificationsPage(model));
+        assertEquals("notifications_page", controller.getNotificationsPage(model, false, "", null));
         String html = render("notifications_page", model);
         assertTrue(html.contains("href=\"/profile/9001\""));
         assertTrue(html.contains("Ada Author"));
         assertTrue(html.contains("mentioned you in a post."));
         assertTrue(html.contains(new User("9001", "Ada", "Author").getProfileImagePath()));
+        assertEquals(1L, notifications.getUnreadCount(9002));
+        controller.markAllRead();
         assertEquals(0L, notifications.getUnreadCount(9002));
         assertEquals(1L, notifications.getUnreadCount(9003));
+        advice.addGlobalAttributes(model);
         assertFalse(render("fragments/top_bar", model).contains("badge"));
     }
 

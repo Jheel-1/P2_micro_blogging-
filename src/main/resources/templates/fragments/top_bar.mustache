@@ -18,10 +18,10 @@ This is a project developed by Dr. Menik to give the students an opportunity to 
         <a href="/people">People</a>
         <a href="/bookmarks">Bookmarks</a>
         <a href="/login">Logout</a>
-        <a href="/notifications" class="btn btn-outline-primary position-relative me-2">
+        <a href="/notifications">
             Notifications
             {{#hasUnreadNotifications}}
-                <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">
+                <span class="notification-badge" aria-label="Unread notifications">
                     {{unreadNotificationCount}}
                 </span>
             {{/hasUnreadNotifications}}

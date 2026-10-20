@@ -213,3 +213,33 @@ nav a:hover {
 .link {
     margin-left: 16pt;
 }
+.notification-badge {
+    background: #b71930;
+    color: #fff;
+    border-radius: 12pt;
+    padding: 2pt 6pt;
+    font-size: 0.8rem;
+}
+.notification-filters, .notification-actions {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 10pt;
+    margin-bottom: 12pt;
+}
+.notification-read-all {
+    margin-bottom: 12pt;
+}
+.notification-unread {
+    background: #edf7ff;
+    border-left: 4pt solid #1479b8;
+}
+.notification-status {
+    font-size: 0.85rem;
+    font-weight: bold;
+    margin-left: 8pt;
+}
+.notification .post-date {
+    display: block;
+    margin: 8pt 0;
+}

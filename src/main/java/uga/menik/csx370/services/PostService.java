@@ -29,6 +29,8 @@ import uga.menik.csx370.models.Comment;
 @Service 
 public class PostService {
     private static final Pattern HASHTAG_PATTERN = Pattern.compile("#([\\p{L}\\p{N}_]{1,100})");
+    private static final Pattern MENTION_PATTERN = Pattern.compile(
+            "(?<![\\p{L}\\p{N}_@])@([\\p{L}\\p{N}_](?:[\\p{L}\\p{N}_.-]*[\\p{L}\\p{N}_])?)");
     private static final DateTimeFormatter POST_DATE_FORMAT =
             DateTimeFormatter.ofPattern("MMM dd, yyyy, hh:mm a", Locale.US);
 
@@ -80,11 +82,28 @@ public class PostService {
                         linkStmt.executeUpdate();
                     }
                 }
+                notifyMentions(conn, user, content, postId);
                 conn.commit();
-            } catch (SQLException e) {
+            } catch (SQLException | RuntimeException e) {
                 conn.rollback();
                 throw e;
             }
+        }
+    }
+
+    private void notifyMentions(Connection conn, User author, String content, int postId) throws SQLException {
+        Set<Long> recipients = new LinkedHashSet<>();
+        Matcher matcher = MENTION_PATTERN.matcher(content);
+        try (PreparedStatement statement = conn.prepareStatement("SELECT userId FROM user WHERE username = ?")) {
+            while (matcher.find()) {
+                statement.setString(1, matcher.group(1));
+                try (ResultSet result = statement.executeQuery()) {
+                    if (result.next()) recipients.add(result.getLong("userId"));
+                }
+            }
+        }
+        for (long recipient : recipients) {
+            NotificationService.insert(conn, recipient, Long.parseLong(author.getUserId()), "MENTION", postId);
         }
     }
 
@@ -320,18 +339,28 @@ public class PostService {
 
     /** Insert a validated comment. The database supplies its creation time. */
     public boolean addComment(String postId, String userId, String comment) {
-        if (comment == null || comment.isBlank()
+        if (comment == null || comment.codePoints().allMatch(c -> Character.isWhitespace(c) || Character.isSpaceChar(c))
                 || comment.codePointCount(0, comment.length()) > 400) {
             return false;
         }
         final String sql = "INSERT INTO comment (postId, userId, content, timestamp) " +
                 "VALUES (?, ?, ?, CURRENT_TIMESTAMP)";
-        try (Connection conn = dataSource.getConnection();
-                PreparedStatement pstmt = conn.prepareStatement(sql)) {
-            pstmt.setString(1, postId);
-            pstmt.setString(2, userId);
-            pstmt.setString(3, comment.strip());
-            return pstmt.executeUpdate() == 1;
+        try (Connection conn = dataSource.getConnection()) {
+            conn.setAutoCommit(false);
+            try {
+                try (PreparedStatement pstmt = conn.prepareStatement(sql)) {
+                    pstmt.setString(1, postId);
+                    pstmt.setString(2, userId);
+                    pstmt.setString(3, comment.strip());
+                    pstmt.executeUpdate();
+                }
+                NotificationService.notifyPostOwner(conn, postId, userId, "COMMENT");
+                conn.commit();
+                return true;
+            } catch (SQLException | RuntimeException e) {
+                conn.rollback();
+                return false;
+            }
         } catch (SQLException e) {
             e.printStackTrace();
             return false;
@@ -339,7 +368,30 @@ public class PostService {
     }
 
     public boolean setLiked(String postId, String userId, boolean isAdd) {
-        return updateSavedState(postId, userId, isAdd, false);
+        if (!isAdd) return updateSavedState(postId, userId, false, false);
+        try (Connection conn = dataSource.getConnection()) {
+            conn.setAutoCommit(false);
+            try {
+                boolean inserted = false;
+                try (PreparedStatement statement = conn.prepareStatement(
+                        "INSERT INTO likes (postId, userId) VALUES (?, ?)")) {
+                    statement.setString(1, postId);
+                    statement.setString(2, userId);
+                    statement.executeUpdate();
+                    inserted = true;
+                } catch (SQLException e) {
+                    if (e.getErrorCode() != 1062) throw e;
+                }
+                if (inserted) NotificationService.notifyPostOwner(conn, postId, userId, "LIKE");
+                conn.commit();
+                return true;
+            } catch (SQLException | RuntimeException e) {
+                conn.rollback();
+                return false;
+            }
+        } catch (SQLException e) {
+            return false;
+        }
     }
 
     public boolean setBookmarked(String postId, String userId, boolean isAdd) {

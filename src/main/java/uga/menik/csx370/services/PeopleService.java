@@ -90,15 +90,31 @@ public class PeopleService {
             return false;
         }
         String sql = follow
-                ? "INSERT INTO user_follow (followerId, followeeId) VALUES (?, ?) "
-                        + "ON DUPLICATE KEY UPDATE followerId = followerId"
+                ? "INSERT INTO user_follow (followerId, followeeId) VALUES (?, ?)"
                 : "DELETE FROM user_follow WHERE followerId = ? AND followeeId = ?";
-        try (Connection conn = dataSource.getConnection();
-                PreparedStatement statement = conn.prepareStatement(sql)) {
-            statement.setString(1, followerId);
-            statement.setString(2, followeeId);
-            statement.executeUpdate();
-            return true;
+        try (Connection conn = dataSource.getConnection()) {
+            conn.setAutoCommit(false);
+            try {
+                boolean inserted = false;
+                try (PreparedStatement statement = conn.prepareStatement(sql)) {
+                    statement.setString(1, followerId);
+                    statement.setString(2, followeeId);
+                    statement.executeUpdate();
+                    inserted = follow;
+                } catch (SQLException e) {
+                    // A retried follow is successful but must not send another notification.
+                    if (!follow || e.getErrorCode() != 1062) throw e;
+                }
+                if (inserted) {
+                    NotificationService.insert(conn, Long.parseLong(followeeId),
+                            Long.parseLong(followerId), "FOLLOW", Long.parseLong(followerId));
+                }
+                conn.commit();
+                return true;
+            } catch (SQLException | RuntimeException e) {
+                conn.rollback();
+                return false;
+            }
         } catch (SQLException e) {
             return false;
         }
