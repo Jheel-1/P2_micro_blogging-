@@ -14,6 +14,7 @@ import org.springframework.web.servlet.ModelAndView;
 
 import uga.menik.csx370.models.Post;
 import uga.menik.csx370.utility.Utility;
+import uga.menik.csx370.services.PostService;
 
 /**
  * Handles /bookmarks and its sub URLs.
@@ -25,6 +26,12 @@ import uga.menik.csx370.utility.Utility;
 @Controller
 @RequestMapping("/bookmarks")
 public class BookmarksController {
+    private final PostService postService;
+
+    public BookmarksController(PostService postService) {
+        this.postService = postService;
+    }
+
 
     /**
      * /bookmarks URL itself is handled by this.
@@ -38,8 +45,11 @@ public class BookmarksController {
 
         // Following line populates sample data.
         // You should replace it with actual data from the database.
-        List<Post> posts = Utility.createSamplePostsListWithoutComments();
+        // Page selection remains a starter placeholder owned by the page feature.
+        // Always reload selected posts so shared post features use real data.
+        List<Post> posts = postService.refreshPosts(Utility.createSamplePostsListWithoutComments());
         mv.addObject("posts", posts);
+        mv.addObject("isNoContent", posts.isEmpty());
 
         // If an error occured, you can set the following property with the
         // error message to show the error message to the user.

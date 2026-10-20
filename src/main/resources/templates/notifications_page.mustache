@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="en">
+{{> fragments/html_header}}
+<body>
+    {{> fragments/top_bar}}
+    <div class="container mt-4" style="max-width: 600px;">
+        <h2>Notifications</h2>
+        <hr>
+        {{#notifications}}
+            <div class="card mb-2 p-3 {{^isRead}}bg-light{{/isRead}}">
+                <div class="d-flex align-items-center">
+                    <img src="{{actor.profileImagePath}}" class="rounded-circle me-3" width="40" height="40" alt="Profile picture">
+                    <div>
+                        <a href="/profile/{{actor.userId}}" class="fw-bold text-decoration-none text-dark">{{actor.firstName}} {{actor.lastName}}</a>
+
+                        {{#isLike}}liked your post.{{/isLike}}
+                        {{#isComment}}commented on your post.{{/isComment}}
+                        {{#isFollow}}started following you.{{/isFollow}}
+                        {{#isMention}}mentioned you in a post.{{/isMention}}
+
+                        <div class="text-muted small">{{createdAt}}</div>
+                    </div>
+                </div>
+            </div>
+        {{/notifications}}
+        {{^notifications}}
+            <p class="text-muted">No notifications yet.</p>
+        {{/notifications}}
+    </div>
+    {{> fragments/footer}}
+</body>
+</html>

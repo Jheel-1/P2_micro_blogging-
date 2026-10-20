@@ -4,11 +4,16 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.Statement;
 import java.sql.Timestamp;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Locale;
+import java.util.Set;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import javax.sql.DataSource;
 
@@ -23,6 +28,10 @@ import uga.menik.csx370.models.Comment;
 
 @Service 
 public class PostService {
+    private static final Pattern HASHTAG_PATTERN = Pattern.compile("#([\\p{L}\\p{N}_]{1,100})");
+    private static final DateTimeFormatter POST_DATE_FORMAT =
+            DateTimeFormatter.ofPattern("MMM dd, yyyy, hh:mm a", Locale.US);
+
     private final DataSource dataSource;
     private final UserService userService;
 
@@ -32,25 +41,185 @@ public class PostService {
         this.userService = userService;
     }
 
+    /** Create a post and persist its normalized hashtags in the same transaction. */
+    public void createPost(User user, String content) throws SQLException {
+        String insertPostSql = "INSERT INTO post (userId, content, timestamp) "
+                + "VALUES (?, ?, CURRENT_TIMESTAMP)";
+        try (Connection conn = dataSource.getConnection()) {
+            conn.setAutoCommit(false);
+            try {
+                int postId;
+                try (PreparedStatement stmt = conn.prepareStatement(
+                        insertPostSql, Statement.RETURN_GENERATED_KEYS)) {
+                    stmt.setString(1, user.getUserId());
+                    stmt.setString(2, content);
+                    stmt.executeUpdate();
+                    try (ResultSet keys = stmt.getGeneratedKeys()) {
+                        if (!keys.next()) {
+                            throw new SQLException("Creating the post did not return an ID.");
+                        }
+                        postId = keys.getInt(1);
+                    }
+                }
+
+                try (PreparedStatement tagStmt = conn.prepareStatement(
+                        "INSERT IGNORE INTO hashtag (hashtag) VALUES (?)");
+                        PreparedStatement linkStmt = conn.prepareStatement(
+                                "INSERT INTO post_hashtag (postId, hashtag) VALUES (?, ?)")) {
+                    for (String hashtag : extractHashtags(content)) {
+                        tagStmt.setString(1, hashtag);
+                        tagStmt.executeUpdate();
+                        linkStmt.setInt(1, postId);
+                        linkStmt.setString(2, hashtag);
+                        linkStmt.executeUpdate();
+                    }
+                }
+                conn.commit();
+            } catch (SQLException e) {
+                conn.rollback();
+                throw e;
+            }
+        }
+    }
+
+    /** Load posts from the given user and accounts they follow. */
+    public List<Post> getFeedForUser(String userId) throws SQLException {
+        String sql = "SELECT p.postId, p.content, p.timestamp, "
+                + "u.userId, u.firstName, u.lastName "
+                + "FROM post p "
+                + "JOIN user u ON u.userId = p.userId "
+                + "WHERE p.userId = ? "
+                + "OR EXISTS (SELECT 1 FROM user_follow f "
+                + "WHERE f.followerId = ? AND f.followeeId = p.userId) "
+                + "ORDER BY p.timestamp DESC, p.postId DESC";
+        List<Post> posts = new ArrayList<>();
+        try (Connection conn = dataSource.getConnection();
+                PreparedStatement stmt = conn.prepareStatement(sql)) {
+            stmt.setString(1, userId);
+            stmt.setString(2, userId);
+            try (ResultSet rs = stmt.executeQuery()) {
+                while (rs.next()) {
+                    posts.add(mapPost(rs));
+                }
+            }
+        }
+        return posts;
+    }
+
+    /** Find posts containing every hashtag in the search string. */
+    public List<Post> findPostsByHashtags(String rawHashtags) throws SQLException {
+        Set<String> hashtags = extractHashtags(rawHashtags);
+        if (hashtags.isEmpty()) {
+            return List.of();
+        }
+
+        String placeholders = String.join(",", java.util.Collections.nCopies(hashtags.size(), "?"));
+        String sql = "SELECT p.postId, p.content, p.timestamp, "
+                + "u.userId, u.firstName, u.lastName "
+                + "FROM post p "
+                + "JOIN user u ON u.userId = p.userId "
+                + "JOIN post_hashtag ph ON ph.postId = p.postId "
+                + "WHERE ph.hashtag IN (" + placeholders + ") "
+                + "GROUP BY p.postId, p.content, p.timestamp, u.userId, u.firstName, u.lastName "
+                + "HAVING COUNT(DISTINCT ph.hashtag) = ? "
+                + "ORDER BY p.timestamp DESC, p.postId DESC";
+
+        List<Post> posts = new ArrayList<>();
+        try (Connection conn = dataSource.getConnection();
+                PreparedStatement stmt = conn.prepareStatement(sql)) {
+            int index = 1;
+            for (String hashtag : hashtags) {
+                stmt.setString(index++, hashtag);
+            }
+            stmt.setInt(index, hashtags.size());
+            try (ResultSet rs = stmt.executeQuery()) {
+                while (rs.next()) {
+                    posts.add(mapPost(rs));
+                }
+            }
+        }
+        return posts;
+    }
+
+    private Post mapPost(ResultSet rs) throws SQLException {
+        Timestamp timestamp = rs.getTimestamp("timestamp");
+        User author = new User(rs.getString("userId"), rs.getString("firstName"), rs.getString("lastName"));
+        return new Post(rs.getString("postId"), rs.getString("content"),
+                timestamp.toLocalDateTime().format(POST_DATE_FORMAT), author, 0, 0, false, false);
+    }
+
+    private Set<String> extractHashtags(String text) {
+        Set<String> hashtags = new LinkedHashSet<>();
+        if (text == null) {
+            return hashtags;
+        }
+        Matcher matcher = HASHTAG_PATTERN.matcher(text);
+        while (matcher.find()) {
+            hashtags.add(matcher.group(1).toLowerCase(Locale.ROOT));
+        }
+        return hashtags;
+    }
+
     /** Fetch one post, including counts and the current viewer's saved states. */
     public List<Post> getPosts(String postId) {
-        List<Post> posts = new ArrayList<>();
+        return queryPosts("WHERE p.postId = ?", List.of(postId));
+    }
 
-        final String sql = 
+    /** Refresh the posts selected by another page without changing that page's selection rules. */
+    public List<Post> refreshPosts(List<Post> selectedPosts) {
+        if (selectedPosts.isEmpty()) {
+            return List.of();
+        }
+        List<String> ids = selectedPosts.stream().map(Post::getPostId).distinct().toList();
+        String slots = String.join(",", java.util.Collections.nCopies(ids.size(), "?"));
+        List<Post> loaded = queryPosts("WHERE p.postId IN (" + slots + ")", ids);
+        java.util.Map<String, Post> byId = new java.util.HashMap<>();
+        loaded.forEach(post -> byId.put(post.getPostId(), post));
+        List<Post> result = new ArrayList<>();
+        for (Post selected : selectedPosts) {
+            Post actual = byId.get(selected.getPostId());
+            if (actual != null) {
+                result.add(actual);
+            }
+        }
+        return result;
+    }
+
+    /** Require all distinct hashtag tokens and sort newest first. */
+    public List<Post> searchHashtags(String input) {
+        List<String> tags = Hashtags.parse(input);
+        if (tags.isEmpty()) {
+            return List.of();
+        }
+        String conditions = String.join(" AND ", java.util.Collections.nCopies(
+                tags.size(), "REGEXP_LIKE(p.content, ?, 'i')"));
+        List<String> patterns = tags.stream().map(Hashtags::sqlPattern).toList();
+        return queryPosts("WHERE " + conditions +
+                " ORDER BY p.timestamp DESC, p.postId DESC", patterns);
+    }
+
+    private static final String POST_SELECT =
         "SELECT p.postId, p.userId, p.content, p.timestamp, u.firstName, u.lastName, " +
         "(SELECT COUNT(*) FROM likes l WHERE l.postId = p.postId) AS likesCount, " +
         "(SELECT COUNT(*) FROM comment c WHERE c.postId = p.postId) AS commentsCount, " +
         "EXISTS(SELECT 1 FROM likes l WHERE l.postId = p.postId AND l.userId = ?) AS isLiked, " +
         "EXISTS(SELECT 1 FROM bookmarks b WHERE b.postId = p.postId AND b.userId = ?) AS isBookmarked " + 
-        "FROM post p JOIN user u ON p.userId = u.userId " + 
-        "WHERE p.postId = ?";
+        "FROM post p JOIN user u ON p.userId = u.userId ";
+
+
+
+    private List<Post> queryPosts(String filter, List<String> parameters) {
+        List<Post> posts = new ArrayList<>();
+        final String sql = POST_SELECT + filter;
 
         try (Connection conn = dataSource.getConnection();
                 PreparedStatement pstmt = conn.prepareStatement(sql)) {
 
             pstmt.setString(1, userService.getLoggedInUser().getUserId());
             pstmt.setString(2, userService.getLoggedInUser().getUserId());
-            pstmt.setString(3, postId);
+            for (int i = 0; i < parameters.size(); i++) {
+                pstmt.setString(i + 3, parameters.get(i));
+            }
 
             try (ResultSet rs = pstmt.executeQuery()) {
                 while (rs.next()) {
@@ -75,7 +244,7 @@ public class PostService {
             }
 
         } catch (SQLException e) {
-            e.printStackTrace();
+            throw new IllegalStateException("Unable to load posts", e);
         }
 
         return posts;
@@ -117,8 +286,8 @@ public class PostService {
                 } // while
             }
         } catch (SQLException e) {
-            e.printStackTrace();
-        } // catch
+            throw new IllegalStateException("Unable to load comments", e);
+        }
 
         Post post = posts.get(0); // Assuming only one post is returned for the given postId
 

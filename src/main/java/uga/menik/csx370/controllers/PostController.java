@@ -104,7 +104,7 @@ public class PostController {
      * See comments in PeopleController.java in followUnfollowUser function regarding 
      * get type form submissions and how path variables work.
      */
-    @GetMapping("/{postId}/heart/{isAdd}")
+    @PostMapping("/{postId}/heart/{isAdd}")
     public String addOrRemoveHeart(@PathVariable("postId") String postId,
             @PathVariable("isAdd") Boolean isAdd) {
         System.out.println("The user is attempting add or remove a heart:");
@@ -127,7 +127,7 @@ public class PostController {
      * See comments in PeopleController.java in followUnfollowUser function regarding 
      * get type form submissions.
      */
-    @GetMapping("/{postId}/bookmark/{isAdd}")
+    @PostMapping("/{postId}/bookmark/{isAdd}")
     public String addOrRemoveBookmark(@PathVariable("postId") String postId,
             @PathVariable("isAdd") Boolean isAdd) {
         System.out.println("The user is attempting add or remove a bookmark:");

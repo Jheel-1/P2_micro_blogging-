@@ -18,26 +18,26 @@ This is a project developed by Dr. Menik to give the students an opportunity to 
             <span class="action-count">{{commentsCount}}</span>
             <!-- show if the post is hearted by the user -->
             {{#isHearted}}
-            <form method="get" action="/post/{{postId}}/heart/false">
+            <form method="post" action="/post/{{postId}}/heart/false">
                 <button class="fa fa-heart"></button>
             </form>
             {{/isHearted}}
             <!-- show if the post is not hearted by the user -->
             {{^isHearted}}
-            <form method="get" action="/post/{{postId}}/heart/true">
+            <form method="post" action="/post/{{postId}}/heart/true">
                 <button class="far fa-heart"></button>
             </form>
             {{/isHearted}}
             <span class="action-count">{{heartsCount}}</span>
             <!-- show if the post is bookmarked by the user -->
             {{#isBookmarked}}
-            <form method="get" action="/post/{{postId}}/bookmark/false">
+            <form method="post" action="/post/{{postId}}/bookmark/false">
                 <button class="fa fa-bookmark"></button>
             </form>
             {{/isBookmarked}}
             <!-- show if the post is not bookmarked by the user -->
             {{^isBookmarked}}
-            <form method="get" action="/post/{{postId}}/bookmark/true">
+            <form method="post" action="/post/{{postId}}/bookmark/true">
                 <button class="far fa-bookmark"></button>
             </form>
             {{/isBookmarked}}
