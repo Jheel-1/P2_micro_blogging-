@@ -9,11 +9,9 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.sql.Timestamp;
-import java.time.format.DateTimeFormatter;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Locale;
 
 import javax.sql.DataSource;
 
@@ -21,15 +19,13 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import uga.menik.csx370.models.FollowableUser;
+import uga.menik.csx370.utility.DisplayTime;
 
 /**
  * This service contains people related functions.
  */
 @Service
 public class PeopleService {
-
-    private static final DateTimeFormatter DATE_FORMAT =
-            DateTimeFormatter.ofPattern("MMM dd, yyyy, hh:mm a", Locale.US);
 
     private final DataSource dataSource;
 
@@ -46,7 +42,7 @@ public class PeopleService {
     public List<FollowableUser> getFollowableUsers(String userIdToExclude) {
         List<FollowableUser> followableUsers = new ArrayList<>();
 
-        final String sql = "SELECT u.userId, u.firstName, u.lastName, "
+        final String sql = "SELECT u.userId, u.username, u.firstName, u.lastName, "
                 + "(SELECT MAX(p.timestamp) FROM post p WHERE p.userId = u.userId) AS lastPost, "
                 + "EXISTS(SELECT 1 FROM user_follow f WHERE f.followerId = ? "
                 + "AND f.followeeId = u.userId) AS isFollowed "
@@ -64,11 +60,11 @@ public class PeopleService {
                     String firstName = rs.getString("firstName");
                     String lastName = rs.getString("lastName");
 
-                    Timestamp lastPost = rs.getTimestamp("lastPost");
-                    String lastActive = lastPost == null ? "Unknown"
-                            : lastPost.toLocalDateTime().format(DATE_FORMAT);
-                    followableUsers.add(new FollowableUser(userId, firstName, lastName,
-                            rs.getBoolean("isFollowed"), lastActive));
+                    String lastActive = DisplayTime.format(rs.getObject("lastPost", LocalDateTime.class));
+                    FollowableUser user = new FollowableUser(userId, firstName, lastName,
+                            rs.getBoolean("isFollowed"), lastActive);
+                    user.setUsername(rs.getString("username"));
+                    followableUsers.add(user);
                 }
             }
 

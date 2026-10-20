@@ -4,7 +4,7 @@ import java.lang.reflect.Proxy;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
-import java.sql.Timestamp;
+import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -90,12 +90,12 @@ public class PostServiceTest extends TestCase {
         row.put("postId", "12"); row.put("userId", "3");
         row.put("firstName", "Jane"); row.put("lastName", "Doe");
         row.put("content", "Hello #2025");
-        row.put("timestamp", Timestamp.valueOf("2025-03-07 22:54:00"));
+        row.put("timestamp", LocalDateTime.parse("2025-03-07T22:54:00"));
         row.put("likesCount", 4); row.put("commentsCount", 2);
         row.put("isLiked", true); row.put("isBookmarked", false);
         rows = List.of(row);
         Post post = service().getPosts("12").get(0);
-        assertEquals("Mar 07, 2025, 10:54 PM", post.getPostDate());
+        assertEquals("Mar 07, 2025, 05:54 PM", post.getPostDate());
         assertEquals("3", post.getUser().getUserId());
         assertEquals(4, post.getHeartsCount());
         assertEquals(2, post.getCommentsCount());
@@ -108,7 +108,7 @@ public class PostServiceTest extends TestCase {
         post.put("postId", "12"); post.put("userId", "3");
         post.put("firstName", "Jane"); post.put("lastName", "Doe");
         post.put("content", "A post");
-        post.put("timestamp", Timestamp.valueOf("2025-03-07 22:54:00"));
+        post.put("timestamp", LocalDateTime.parse("2025-03-07T22:54:00"));
         post.put("likesCount", 0); post.put("commentsCount", 1);
         post.put("isLiked", false); post.put("isBookmarked", false);
         rows = List.of(post);
@@ -121,7 +121,7 @@ public class PostServiceTest extends TestCase {
         assertEquals(1, expanded.getComments().size());
         assertEquals("90", expanded.getComments().get(0).getPostId());
         assertEquals("A comment", expanded.getComments().get(0).getContent());
-        assertEquals("Mar 07, 2025, 10:54 PM", expanded.getComments().get(0).getPostDate());
+        assertEquals("Mar 07, 2025, 05:54 PM", expanded.getComments().get(0).getPostDate());
     }
 
     public void testCommentValidationRejectsInvalidContentBeforeQuerying() {

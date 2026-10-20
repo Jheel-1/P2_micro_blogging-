@@ -4,21 +4,18 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.sql.Timestamp;
-import java.time.format.DateTimeFormatter;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Locale;
 import javax.sql.DataSource;
 import org.springframework.stereotype.Service;
 import uga.menik.csx370.models.Notification;
 import uga.menik.csx370.models.User;
+import uga.menik.csx370.utility.DisplayTime;
 
 @Service
 public class NotificationService {
     public static final List<String> TYPES = List.of("LIKE", "COMMENT", "FOLLOW", "MENTION");
-    private static final DateTimeFormatter DATE_FORMAT =
-            DateTimeFormatter.ofPattern("MMM dd, yyyy, hh:mm a", Locale.US);
     private final DataSource dataSource;
 
     public NotificationService(DataSource dataSource) {
@@ -83,11 +80,11 @@ public class NotificationService {
                 while (result.next()) {
                     User actor = new User(result.getString("actor_id"),
                             result.getString("firstName"), result.getString("lastName"));
-                    Timestamp createdAt = result.getTimestamp("created_at");
+                    LocalDateTime createdAt = result.getObject("created_at", LocalDateTime.class);
                     notifications.add(new Notification(result.getLong("id"), userId, actor,
                             result.getString("type"), result.getLong("target_id"),
                             result.getBoolean("is_read"),
-                            createdAt == null ? "Unknown" : createdAt.toLocalDateTime().format(DATE_FORMAT),
+                            DisplayTime.format(createdAt),
                             result.getObject("existingPostId") != null));
                 }
             }

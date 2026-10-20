@@ -52,6 +52,7 @@ public class ApplicationFeaturesIT extends TestCase {
         source = new DriverManagerDataSource(url, System.getenv("PROFILE_TEST_USER"),
                 System.getenv("PROFILE_TEST_PASSWORD"));
         String schema = Files.readString(Path.of("database_setup.sql"))
+                .split("-- Demo data", 2)[0]
                 .replaceAll("(?im)^\\s*(?:create database if not exists|use)\\s+"
                         + "csx370_mb_platform\\s*;\\s*$", "");
         assertFalse(Pattern.compile("(?im)^\\s*(?:create\\s+database|use)\\b").matcher(schema).find());
@@ -90,7 +91,7 @@ public class ApplicationFeaturesIT extends TestCase {
         assertFalse(users.stream().anyMatch(u -> u.getUserId().equals(viewer)));
         FollowableUser followed = users.stream().filter(u -> u.getUserId().equals(author)).findFirst().get();
         assertTrue(followed.isFollowed());
-        assertEquals("Mar 07, 2025, 10:54 PM", followed.getLastActiveDate());
+        assertEquals("Mar 07, 2025, 05:54 PM", followed.getLastActiveDate());
         assertEquals("Unknown", users.stream().filter(u -> u.getUserId().equals(other)).findFirst().get().getLastActiveDate());
         assertEquals(1, alerts(author, "FOLLOW").size());
         assertEquals("/profile/" + viewer, alerts(author, "FOLLOW").get(0).getTargetUrl());
@@ -184,7 +185,7 @@ public class ApplicationFeaturesIT extends TestCase {
         List<Notification> all = notifications.getNotificationsForUser(Long.parseLong(author));
         assertEquals(3, all.size());
         assertTrue(all.get(0).getId() > all.get(1).getId());
-        assertEquals("Mar 07, 2025, 10:54 PM", all.get(0).getCreatedAt());
+        assertEquals("Mar 07, 2025, 05:54 PM", all.get(0).getCreatedAt());
         long like = alerts(author, "LIKE").get(0).getId();
         notifications.markAsRead(Long.parseLong(viewer), like);
         assertEquals(3L, notifications.getUnreadCount(Long.parseLong(author)));

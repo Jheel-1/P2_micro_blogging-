@@ -5,8 +5,7 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
-import java.sql.Timestamp;
-import java.time.format.DateTimeFormatter;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -25,14 +24,13 @@ import uga.menik.csx370.models.Post;
 import uga.menik.csx370.models.User;
 import uga.menik.csx370.models.ExpandedPost;
 import uga.menik.csx370.models.Comment;
+import uga.menik.csx370.utility.DisplayTime;
 
 @Service 
 public class PostService {
     private static final Pattern HASHTAG_PATTERN = Pattern.compile("#([\\p{L}\\p{N}_]{1,100})");
     private static final Pattern MENTION_PATTERN = Pattern.compile(
             "(?<![\\p{L}\\p{N}_@])@([\\p{L}\\p{N}_](?:[\\p{L}\\p{N}_.-]*[\\p{L}\\p{N}_])?)");
-    private static final DateTimeFormatter POST_DATE_FORMAT =
-            DateTimeFormatter.ofPattern("MMM dd, yyyy, hh:mm a", Locale.US);
 
     private final DataSource dataSource;
     private final UserService userService;
@@ -167,10 +165,14 @@ public class PostService {
     }
 
     private Post mapPost(ResultSet rs) throws SQLException {
-        Timestamp timestamp = rs.getTimestamp("timestamp");
+        LocalDateTime timestamp = rs.getObject("timestamp", LocalDateTime.class);
         User author = new User(rs.getString("userId"), rs.getString("firstName"), rs.getString("lastName"));
         return new Post(rs.getString("postId"), rs.getString("content"),
-                timestamp.toLocalDateTime().format(POST_DATE_FORMAT), author, 0, 0, false, false);
+                formatTimestamp(timestamp), author, 0, 0, false, false);
+    }
+
+    private String formatTimestamp(LocalDateTime timestamp) {
+        return DisplayTime.format(timestamp);
     }
 
     private Set<String> extractHashtags(String text) {
@@ -261,10 +263,8 @@ public class PostService {
                     String lastName = rs.getString("lastName");
                     User author = new User(userId, firstName, lastName);
                     String content = rs.getString("content");
-                    Timestamp createdAt = rs.getTimestamp("timestamp");
-                    String timestamp = createdAt.toLocalDateTime().format(
-                        DateTimeFormatter.ofPattern("MMM dd, yyyy, hh:mm a", Locale.US)
-                    );
+                    LocalDateTime createdAt = rs.getObject("timestamp", LocalDateTime.class);
+                    String timestamp = formatTimestamp(createdAt);
                     int likes = rs.getInt("likesCount");
                     int comments = rs.getInt("commentsCount");
                     boolean isLiked = rs.getBoolean("isLiked");
@@ -309,10 +309,8 @@ public class PostService {
                     String lastName = rs.getString("lastName");
                     User author = new User(userId, firstName, lastName);
                     String content = rs.getString("content");
-                    Timestamp createdAt = rs.getTimestamp("timestamp");
-                    String timestamp = createdAt.toLocalDateTime().format(
-                        DateTimeFormatter.ofPattern("MMM dd, yyyy, hh:mm a", Locale.US)
-                    );
+                    LocalDateTime createdAt = rs.getObject("timestamp", LocalDateTime.class);
+                    String timestamp = formatTimestamp(createdAt);
                     comments.add(new Comment(commentId, content, timestamp, author));
 
                 } // while

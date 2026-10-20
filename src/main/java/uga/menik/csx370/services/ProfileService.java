@@ -4,10 +4,9 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.time.format.DateTimeFormatter;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Locale;
 
 import javax.sql.DataSource;
 
@@ -16,13 +15,11 @@ import org.springframework.stereotype.Service;
 
 import uga.menik.csx370.models.Post;
 import uga.menik.csx370.models.User;
+import uga.menik.csx370.utility.DisplayTime;
 
 /** Loads a user's profile posts with the logged-in viewer's interaction states. */
 @Service
 public class ProfileService {
-
-    private static final DateTimeFormatter POST_DATE_FORMAT =
-            DateTimeFormatter.ofPattern("MMM dd, yyyy, hh:mm a", Locale.US);
 
     private final DataSource dataSource;
 
@@ -59,8 +56,7 @@ public class ProfileService {
                 while (result.next()) {
                     User author = new User(result.getString("userId"),
                             result.getString("firstName"), result.getString("lastName"));
-                    String postDate = result.getTimestamp("timestamp").toLocalDateTime()
-                            .format(POST_DATE_FORMAT);
+                    String postDate = DisplayTime.format(result.getObject("timestamp", LocalDateTime.class));
                     posts.add(new Post(result.getString("postId"), result.getString("content"),
                             postDate, author, result.getInt("likesCount"),
                             result.getInt("commentsCount"), result.getBoolean("isLiked"),

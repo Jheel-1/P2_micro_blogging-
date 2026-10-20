@@ -20,6 +20,11 @@ public class FollowableUser extends User {
      * This is the date and time that this user has last made a post.
      */
     private final String lastActiveDate;
+    private String username = "";
+
+    public String getUsername() { return username; }
+
+    public void setUsername(String username) { this.username = username; }
 
     /**
      * Constructs a FollowableUser with specified details and follow status.

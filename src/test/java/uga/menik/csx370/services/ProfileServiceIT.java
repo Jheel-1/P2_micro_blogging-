@@ -51,6 +51,7 @@ public class ProfileServiceIT extends TestCase {
         try {
             // Apply the real project table definitions to the separate test DB.
             String schema = Files.readString(Path.of("database_setup.sql"))
+                    .split("-- Demo data", 2)[0]
                     .replaceAll("(?im)^\\s*(?:create database if not exists|use)\\s+"
                             + "csx370_mb_platform\\s*;\\s*$", "");
             assertFalse("Test setup must not create or switch to another database",
@@ -155,7 +156,7 @@ public class ProfileServiceIT extends TestCase {
 
     public void testDateUsesRequiredDisplayFormat() throws Exception {
         Post post = profiles.getPostsForUser(9001, 9002).get(0);
-        assertEquals("Mar 07, 2025, 10:54 PM", post.getPostDate());
+        assertEquals("Mar 07, 2025, 05:54 PM", post.getPostDate());
     }
 
     @SuppressWarnings("unchecked")
