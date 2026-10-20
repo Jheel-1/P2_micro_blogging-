@@ -96,7 +96,7 @@ create table if not exists notifications (
      actor_id int not null,
      type varchar(400) not null,
      target_id int default null,
-     is_read Boolean default false,
+     is_read boolean default false,
      created_at timestamp default current_timestamp,
      foreign key (recipient_id) references users(id) on delete cascade,
      foreign key (actor_id) references users(id) on delete cascade
