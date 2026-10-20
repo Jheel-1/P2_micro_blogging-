@@ -88,3 +88,16 @@ create table if not exists bookmarks (
     foreign key (userId) references user(userId) on delete cascade,
     foreign key (postId) references post(postId) on delete cascade
 );
+
+-- Create notifications table; this is for additional feature
+create table if not exists notifications (
+     id int auto_increment primary key.
+     recipient_id int not null,
+     actor_id int not null,
+     type varchar(400) not null,
+     target_id int default null,
+     is_read boolean default false,
+     created_at timestamp default current_timestamp,
+     foreign key (recipient_id) references users(id) on delete cascade,
+     foreign key (actor_id) references users(id) on delete cascade
+);
