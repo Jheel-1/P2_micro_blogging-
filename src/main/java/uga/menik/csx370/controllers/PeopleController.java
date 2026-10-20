@@ -7,6 +7,7 @@ package uga.menik.csx370.controllers;
 
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
+import java.sql.SQLException;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -86,8 +87,21 @@ public class PeopleController {
         System.out.println("\tuserId: " + userId);
         System.out.println("\tisFollow: " + isFollow);
 
-        // Redirect the user if the comment adding is a success.
-        // return "redirect:/people";
+        String currentUserId = userService.getLoggedInUser() != null
+                ? userService.getLoggedInUser().getUserId()
+                : null;
+        if (currentUserId != null && isFollow != null) {
+            try {
+                if (isFollow) {
+                    peopleService.followUser(currentUserId, userId);
+                } else {
+                    peopleService.unfollowUser(currentUserId, userId);
+                }
+                return "redirect:/people";
+            } catch (SQLException e) {
+                e.printStackTrace();
+            }
+        }
 
         // Redirect the user with an error message if there was an error.
         String message = URLEncoder.encode("Failed to (un)follow the user. Please try again.",
