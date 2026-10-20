@@ -18,7 +18,7 @@ Vishaka Venkatraman: Database design and the new non-trivial feature,
 notifications.
 
 Thamim Parvin: Profile pages for the logged-in user and other users.
-Also prepared the ER image and integrated and tested the completed Plan B
+Also integrated and tested the completed Plan B
 version with the group's changes.
 
 Jessica Li: People page and bookmarks page.
@@ -34,9 +34,6 @@ WHAT IS INCLUDED
 - database_setup.sql: the nine tables, keys, constraints, and demo inserts.
   This is the required database file; a second database.sql is not needed.
 - dml.sql: application queries with simple explanations, parameters, and URLs.
-- er-diagram.png: the ER diagram to submit.
-- er-diagram.svg: editable source for the diagram.
-- ER-model.txt: explanation of the relationships and their table conversion.
 - src/test: unit tests and separate MySQL integration tests.
 
 REQUIREMENTS
