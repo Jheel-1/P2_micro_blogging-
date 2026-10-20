@@ -7,6 +7,7 @@ package uga.menik.csx370.controllers;
 
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
+import java.sql.SQLException;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -18,6 +19,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.servlet.ModelAndView;
 
 import uga.menik.csx370.models.FollowableUser;
+import uga.menik.csx370.models.User;
 import uga.menik.csx370.services.PeopleService;
 import uga.menik.csx370.services.UserService;
 
@@ -49,12 +51,23 @@ public class PeopleController {
         // See notes on ModelAndView in BookmarksController.java.
         ModelAndView mv = new ModelAndView("people_page");
 
-        String currentUserId = userService.getLoggedInUser() != null
-                ? userService.getLoggedInUser().getUserId()
-                : null;
-        List<FollowableUser> followableUsers = peopleService.getFollowableUsers(currentUserId);
-        mv.addObject("users", followableUsers);
-        mv.addObject("isNoContent", followableUsers.isEmpty());
+        // Verify logged in user
+        User currentUser = userService.getLoggedInUser();
+        if (currentUser == null) { // if user is not logged in, redirect to login pg
+            mv.setViewName("redirect:/login");
+            return mv;
+        }
+        try { // SQL query to list other users, if our user follows them, and their latest post date
+            List<FollowableUser> followableUsers = peopleService.getFollowableUsers(currentUser.getUserId());
+            mv.addObject("users", followableUsers);
+
+            if (followableUsers.isEmpty()) { // display empty message when no other users are found
+                mv.addObject("isNoContent", true);
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+            error = "Failed to retrieve followable users: " + e.getMessage();
+        }
 
         // If an error occured, you can set the following property with the
         // error message to show the error message to the user.
@@ -88,11 +101,21 @@ public class PeopleController {
 
         // Redirect the user if the comment adding is a success.
         // return "redirect:/people";
+        User currentUser = userService.getLoggedInUser();
+        if (currentUser == null) {
+            return "redirect:/login";
+        }
 
-        // Redirect the user with an error message if there was an error.
-        String message = URLEncoder.encode("Failed to (un)follow the user. Please try again.",
-                StandardCharsets.UTF_8);
-        return "redirect:/people?error=" + message;
+        try { // SQL INSERT/ DELETE query to add or remove a follower relationship 
+            peopleService.setFollowerStatus(currentUser.getUserId(), userId, isFollow);
+            return "redirect:/people";
+        } catch (SQLException e) {
+            e.printStackTrace();
+            // Redirect the user with an error message if there was an error.
+            String message = URLEncoder.encode("Failed to (un)follow the user: " + e.getMessage(),
+                    StandardCharsets.UTF_8);
+            return "redirect:/people?error=" + message;
+        }
     }
 
 }
