@@ -99,11 +99,28 @@ public class PeopleController {
         System.out.println("\tuserId: " + userId);
         System.out.println("\tisFollow: " + isFollow);
 
+<<<<<<< HEAD
         // Redirect the user if the comment adding is a success.
         // return "redirect:/people";
         User currentUser = userService.getLoggedInUser();
         if (currentUser == null) {
             return "redirect:/login";
+=======
+        String currentUserId = userService.getLoggedInUser() != null
+                ? userService.getLoggedInUser().getUserId()
+                : null;
+        if (currentUserId != null && isFollow != null) {
+            try {
+                if (isFollow) {
+                    peopleService.followUser(currentUserId, userId);
+                } else {
+                    peopleService.unfollowUser(currentUserId, userId);
+                }
+                return "redirect:/people";
+            } catch (SQLException e) {
+                e.printStackTrace();
+            }
+>>>>>>> ab3fca360b562a2dc6699c28d7a8c2438cbe44b4
         }
 
         try { // SQL INSERT/ DELETE query to add or remove a follower relationship 
