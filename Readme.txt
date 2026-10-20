@@ -37,10 +37,6 @@ WHAT IS INCLUDED
 - er-diagram.png: the ER diagram to submit.
 - er-diagram.svg: editable source for the diagram.
 - ER-model.txt: explanation of the relationships and their table conversion.
-- DEMO-WALKTHROUGH.txt: a recording order and short narration prompts.
-- demo-walkthrough.webm: a narrated walkthrough of the verified Chrome
-  screens and actual build/database output. It uses a generated Windows
-  voice. Open it in Chrome or another WebM video player.
 - src/test: unit tests and separate MySQL integration tests.
 
 REQUIREMENTS
@@ -228,11 +224,7 @@ https://dev.mysql.com/doc/refman/8.0/en/time-zone-support.html
 Java 17 date/time conversion:
 https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/time/ZonedDateTime.html
 
-SUBMISSION
-----------
-Submit the source, this Readme.txt, database_setup.sql, dml.sql, ER PNG,
-and demo-walkthrough.webm. DEMO-WALKTHROUGH.txt is also provided if the group
-wants to record a live walkthrough with its own narration.
-If the demo data is changed before a new recording,
-export the final rows from every table and replace the insert section in
-database_setup.sql so it matches what is shown in the demo.
+KEEPING THE DATABASE FILE UP TO DATE
+----------------------------------
+If the sample data changes, export the current rows from every table and
+replace the insert section in database_setup.sql so it matches the app.
