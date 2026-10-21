@@ -27,13 +27,21 @@ files
 
 FIRST-TIME DATABASE SETUP
 ------------------------
+Install Java 17 or newer, Maven, Docker Desktop, and Google Chrome.
 Run commands from the folder containing pom.xml.
 
 cd "C:\path\to\extracted-project"
 
 Start Docker Desktop.
 
+If the class MySQL container already exists, start it:
 docker start mysql-server-x370
+
+If it does not exist, create it instead:
+docker run --name mysql-server-x370 -e MYSQL_ROOT_PASSWORD=mysqlpass -p 33306:3306 -d mysql:8.1.0
+
+Wait for MySQL to finish starting before continuing. These commands assume
+the container name and password above; adjust them for your class setup.
 
 Copy the setup file into the container:
 docker cp database_setup.sql mysql-server-x370:/tmp/database_setup.sql
@@ -42,21 +50,59 @@ Open MySQL:
 docker exec -it mysql-server-x370 mysql -u root -p
 enter mysqlpass.
 
+Run this full import once on a fresh database, with the website stopped.
+It creates csx370_mb_platform and inserts demo rows into all nine tables.
+It refuses to insert demo data if any project table already contains rows.
+If an insert fails, all demo inserts are rolled back together.
+It does not delete old accounts or repair previously mixed demo data.
+
 At the mysql prompt run:
 SOURCE /tmp/database_setup.sql;
-
-This creates csx370_mb_platform and inserts the demo rows into every table.
-
 USE csx370_mb_platform;
 SHOW TABLES;
+SELECT userId, username FROM user ORDER BY userId;
 SELECT COUNT(*) AS number_of_posts FROM post;
 exit;
 
-Exit MySQL.
+Expect 5 users and 8 posts. User ID 1 is alex and ID 2 is maya. If you see
+old accounts or the empty-tables error, use the separate setup below.
 
 The connection settings are in src/main/resources/application.properties.
 The supplied settings use localhost:33306, database csx370_mb_platform,
 username root, and the local password mysqlpass.
+
+SEPARATE DEMO SETUP IF YOU ALREADY HAVE OLD DATA
+----------------------------------------------
+Keep your old database. Use this separate MySQL container for the demo.
+It uses port 33307, so it does not replace the class server on port 33306.
+
+Create it once:
+docker run --name mysql-microblogging-demo -e MYSQL_ROOT_PASSWORD=mysqlpass -p 33307:3306 -d mysql:8.1.0
+
+Wait for MySQL to finish starting, then copy the same submission SQL file:
+docker cp database_setup.sql mysql-microblogging-demo:/tmp/database_setup.sql
+docker exec -it mysql-microblogging-demo mysql -u root -p
+
+Enter mysqlpass. At the mysql prompt run:
+SOURCE /tmp/database_setup.sql;
+USE csx370_mb_platform;
+SELECT userId, username FROM user ORDER BY userId;
+SELECT COUNT(*) AS number_of_posts FROM post;
+exit;
+
+Expect alex, maya, jordan, sam, demo_new_member, and 8 posts.
+If this demo container already has those rows, skip the import.
+On later runs, start it with: docker start mysql-microblogging-demo
+
+Build as described below. Stop any website already running on port 8081.
+For this separate container, always use this Windows PowerShell command:
+mvn spring-boot:run --% -Dspring-boot.run.arguments="--server.port=8081 --spring.datasource.url=jdbc:mysql://localhost:33307/csx370_mb_platform"
+
+For Windows Command Prompt or macOS/Linux, use:
+mvn spring-boot:run -Dspring-boot.run.arguments="--server.port=8081 --spring.datasource.url=jdbc:mysql://localhost:33307/csx370_mb_platform"
+
+Then open Chrome and log in again. The default commands below use the class
+server on port 33306; use the commands above for the separate demo server.
 
 COMPILE AND RUN
 ---------------
@@ -188,4 +234,7 @@ MySQL time-zone behavior:
 https://dev.mysql.com/doc/refman/8.0/en/time-zone-support.html
 Java 17 date/time conversion:
 https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/time/ZonedDateTime.html
+MySQL error handling for the all-or-nothing demo import:
+https://dev.mysql.com/doc/refman/8.0/en/declare-handler.html
+https://dev.mysql.com/doc/refman/8.0/en/resignal.html
 

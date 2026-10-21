@@ -1,5 +1,6 @@
 -- Create the database.
 -- Run once on a fresh project database. This file does not delete existing data.
+-- The demo import refuses nonempty tables. See Readme.txt for a separate setup.
 -- All sample dates below are UTC; the app displays Eastern Time.
 SET time_zone = '+00:00';
 create database if not exists csx370_mb_platform;
@@ -108,6 +109,32 @@ create table if not exists notifications (
 -- Demo data: final snapshot after the verified Chrome demonstration.
 -- All accounts are fictional and use DemoPass123!; passwords are BCrypt hashes.
 -- Export includes every row in every table, including read notification states.
+-- Keep these inserts together: a failed import must not attach posts to old users.
+DROP PROCEDURE IF EXISTS p2_load_demo_data;
+DELIMITER //
+CREATE PROCEDURE p2_load_demo_data()
+BEGIN
+    -- Undo every demo insert if any statement fails, then show the original error.
+    DECLARE EXIT HANDLER FOR SQLEXCEPTION
+    BEGIN
+        ROLLBACK;
+        RESIGNAL;
+    END;
+
+    -- Fixed demo IDs are safe only when all project tables are empty.
+    IF EXISTS (SELECT 1 FROM user)
+        OR EXISTS (SELECT 1 FROM post)
+        OR EXISTS (SELECT 1 FROM hashtag)
+        OR EXISTS (SELECT 1 FROM post_hashtag)
+        OR EXISTS (SELECT 1 FROM user_follow)
+        OR EXISTS (SELECT 1 FROM comment)
+        OR EXISTS (SELECT 1 FROM likes)
+        OR EXISTS (SELECT 1 FROM bookmarks)
+        OR EXISTS (SELECT 1 FROM notifications) THEN
+        SIGNAL SQLSTATE '45000'
+            SET MESSAGE_TEXT = 'Demo setup requires empty tables. Existing rows were kept. See Readme.txt for a separate demo setup.';
+    END IF;
+
 START TRANSACTION;
 INSERT INTO `user` (`userId`, `username`, `password`, `firstName`, `lastName`) VALUES (1,'alex','$2a$10$.4RX...B9Rw6msDG0AcifeZLaf8h7K3yEceXhSKi/pwx198juiSSy','Alex','Rivera');
 INSERT INTO `user` (`userId`, `username`, `password`, `firstName`, `lastName`) VALUES (2,'maya','$2a$10$.4RX...B9Rw6msDG0AcifeZLaf8h7K3yEceXhSKi/pwx198juiSSy','Maya','Chen');
@@ -180,3 +207,8 @@ INSERT INTO `notifications` (`id`, `recipient_id`, `actor_id`, `type`, `target_i
 INSERT INTO `notifications` (`id`, `recipient_id`, `actor_id`, `type`, `target_id`, `is_read`, `created_at`) VALUES (16,2,1,'COMMENT',5,1,'2026-10-20 23:26:48');
 INSERT INTO `notifications` (`id`, `recipient_id`, `actor_id`, `type`, `target_id`, `is_read`, `created_at`) VALUES (17,2,1,'MENTION',8,1,'2026-10-20 23:26:48');
 COMMIT;
+    SELECT 'Demo setup complete: 5 users and 8 posts loaded.' AS setup_result;
+END//
+DELIMITER ;
+CALL p2_load_demo_data();
+DROP PROCEDURE IF EXISTS p2_load_demo_data;
