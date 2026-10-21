@@ -37,15 +37,6 @@ Run commands from the folder containing pom.xml.
 2. If your class MySQL container already exists, start it:
    docker start mysql-server-x370
 
-   Use your actual container name if it is different. If you do not have one,
-   create a local demo container:
-   docker run --name mysql-server-x370 -e MYSQL_ROOT_PASSWORD=mysqlpass -p 33306:3306 -d mysql:8.1.0
-
-   Wait for MySQL to finish starting. Check the port:
-   docker port mysql-server-x370 3306
-
-   The host port should be 33306.
-
 3. Copy the setup file into the container:
    docker cp database_setup.sql mysql-server-x370:/tmp/database_setup.sql
 
@@ -86,6 +77,8 @@ Start from macOS/Linux:
    mvn spring-boot:run -Dspring-boot.run.arguments=--server.port=8081
 
 Open Chrome at http://localhost:8081/
+
+
 Stop the app with Ctrl+C in its terminal. The database container is separate.
 
 DEMO ACCOUNTS
