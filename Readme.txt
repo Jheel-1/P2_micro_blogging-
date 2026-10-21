@@ -25,116 +25,57 @@ files
 - src/test: unit tests and separate MySQL integration tests.
 
 
-FIRST-TIME DATABASE SETUP
-------------------------
+
 Run commands from the folder containing pom.xml.
 
 cd "C:\path\to\extracted-project"
+FIRST-TIME DATABASE SETUP
+------------------------
+Do this once. If you already loaded the demo data into this container,
+skip to START THE WEBSITE.
 
-Start Docker Desktop.
+1. Open Docker Desktop and create the demo container:
 
-If the class MySQL container already exists, start it:
-docker start mysql-server-x370
+   docker run --name mysql-microblogging-demo -e MYSQL_ROOT_PASSWORD=mysqlpass -p 33307:3306 -d mysql:8.1.0
 
+2. Wait for MySQL to finish starting, then run:
 
-Copy the setup file into the container:
-docker cp database_setup.sql mysql-server-x370:/tmp/database_setup.sql
+   docker cp database_setup.sql mysql-microblogging-demo:/tmp/database_setup.sql
+   docker exec -it mysql-microblogging-demo mysql -u root -p
 
-Open MySQL:
-docker exec -it mysql-server-x370 mysql -u root -p
-enter mysqlpass.
+   Enter the password: mysqlpass
 
-Run this full import once on a fresh database, with the website stopped.
-It creates csx370_mb_platform and inserts demo rows into all nine tables.
-It refuses to insert demo data if any project table already contains rows.
-If an insert fails, all demo inserts are rolled back together.
-It does not delete old accounts or repair previously mixed demo data.
+3. At the mysql> prompt, run:
 
-At the mysql prompt run:
-SOURCE /tmp/database_setup.sql;
-USE csx370_mb_platform;
-SHOW TABLES;
-SELECT userId, username FROM user ORDER BY userId;
-SELECT COUNT(*) AS number_of_posts FROM post;
-exit;
+   SOURCE /tmp/database_setup.sql;
+   exit;
 
-Expect 5 users and 8 posts. User ID 1 is alex and ID 2 is maya. If you see
-old accounts or the empty-tables error, use the separate setup below.
+   This loads the demo accounts, posts, and other sample data.
+   Your old class database remains separate.
 
-The connection settings are in src/main/resources/application.properties.
-The supplied settings use localhost:33306, database csx370_mb_platform,
-username root, and the local password mysqlpass.
+START THE WEBSITE
+------------------
+Open Docker Desktop. Stop any running website with Ctrl+C first.
 
+Run these commands in the SAME PowerShell terminal, inside the project folder:
 
-OR**********************************
-
-
-
-
-SEPARATE DEMO SETUP IF YOU ALREADY HAVE OLD DATA FROM PREVIOUS ASSIGNMENT***
-----------------------------------------------
-Keep your old database. Use this separate MySQL container for the demo.
-It uses port 33307, so it does not replace the class server on port 33306.
-
-
-docker start mysql-server-x370
-
-Create it once:
-docker run --name mysql-microblogging-demo -e MYSQL_ROOT_PASSWORD=mysqlpass -p 33307:3306 -d mysql:8.1.0
-
-Wait for MySQL to finish starting, then copy the same submission SQL file:
-docker cp database_setup.sql mysql-microblogging-demo:/tmp/database_setup.sql
-docker exec -it mysql-microblogging-demo mysql -u root -p
-
-Enter mysqlpass. At the mysql prompt run:
-SOURCE /tmp/database_setup.sql;
-USE csx370_mb_platform;
-SELECT userId, username FROM user ORDER BY userId;
-SELECT COUNT(*) AS number_of_posts FROM post;
-exit;
-
-Expect alex, maya, jordan, sam, demo_new_member, and 8 posts.
-If this demo container already has those rows, skip the import.
-On later runs, start it with: docker start mysql-microblogging-demo
-
-
-
-
-
-
-
-
-
-
-COMPILE AND RUN
----------------
-Use Windows PowerShell in the project folder containing pom.xml.
-These commands use the separate demo container on port 33307.
-If you used the "non-assignment" database setup instead, replace
-mysql-microblogging-demo with mysql-server-x370 and 33307 with 33306.
-
-1. Open Docker Desktop. Stop any running website with Ctrl+C.
-
-2. Build the project:
-   mvn clean package
-
-3. Run these three commands in the SAME PowerShell window:
    docker start mysql-microblogging-demo
+   mvn clean package
    $env:SPRING_DATASOURCE_URL = 'jdbc:mysql://localhost:33307/csx370_mb_platform'
    mvn spring-boot:run --% -Dspring-boot.run.arguments="--server.port=8081"
 
-4. Wait for the app to start. Open Chrome at http://localhost:8081/
-   Log in with username alex and password DemoPass123!
+Wait for the app to start, then open Chrome:
+http://localhost:8081/
+
+Demo login:
+Username: alex
+Password: DemoPass123!
+
+You can also log in as maya, jordan, or sam with the same password.
 
 Leave the terminal open while using the website. Press Ctrl+C to stop it.
-When starting from a new terminal, repeat step 3, including the $env line.
-You do not need to import database_setup.sql again.
-
-On macOS/Linux, follow the same steps but replace the last two commands
-in step 3 with these (use 33306 if you chose the class database):
-   export SPRING_DATASOURCE_URL='jdbc:mysql://localhost:33307/csx370_mb_platform'
-   mvn spring-boot:run -Dspring-boot.run.arguments=--server.port=8081
-
+Run the startup commands again in each new terminal, including the $env line.
+Do not repeat the database import.
 
 
 
