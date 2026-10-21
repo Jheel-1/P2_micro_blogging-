@@ -76,6 +76,9 @@ SEPARATE DEMO SETUP IF YOU ALREADY HAVE OLD DATA FROM PREVIOUS ASSIGNMENT***
 Keep your old database. Use this separate MySQL container for the demo.
 It uses port 33307, so it does not replace the class server on port 33306.
 
+
+docker start mysql-server-x370
+
 Create it once:
 docker run --name mysql-microblogging-demo -e MYSQL_ROOT_PASSWORD=mysqlpass -p 33307:3306 -d mysql:8.1.0
 
