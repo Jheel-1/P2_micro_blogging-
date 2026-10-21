@@ -27,7 +27,6 @@ files
 
 FIRST-TIME DATABASE SETUP
 ------------------------
-Install Java 17 or newer, Maven, Docker Desktop, and Google Chrome.
 Run commands from the folder containing pom.xml.
 
 cd "C:\path\to\extracted-project"
@@ -37,11 +36,6 @@ Start Docker Desktop.
 If the class MySQL container already exists, start it:
 docker start mysql-server-x370
 
-If it does not exist, create it instead:
-docker run --name mysql-server-x370 -e MYSQL_ROOT_PASSWORD=mysqlpass -p 33306:3306 -d mysql:8.1.0
-
-Wait for MySQL to finish starting before continuing. These commands assume
-the container name and password above; adjust them for your class setup.
 
 Copy the setup file into the container:
 docker cp database_setup.sql mysql-server-x370:/tmp/database_setup.sql
@@ -71,7 +65,7 @@ The connection settings are in src/main/resources/application.properties.
 The supplied settings use localhost:33306, database csx370_mb_platform,
 username root, and the local password mysqlpass.
 
-SEPARATE DEMO SETUP IF YOU ALREADY HAVE OLD DATA
+SEPARATE DEMO SETUP IF YOU ALREADY HAVE OLD DATA FROM PREVIOUS ASSIGNMENT***
 ----------------------------------------------
 Keep your old database. Use this separate MySQL container for the demo.
 It uses port 33307, so it does not replace the class server on port 33306.
@@ -94,15 +88,6 @@ Expect alex, maya, jordan, sam, demo_new_member, and 8 posts.
 If this demo container already has those rows, skip the import.
 On later runs, start it with: docker start mysql-microblogging-demo
 
-Build as described below. Stop any website already running on port 8081.
-For this separate container, always use this Windows PowerShell command:
-mvn spring-boot:run --% -Dspring-boot.run.arguments="--server.port=8081 --spring.datasource.url=jdbc:mysql://localhost:33307/csx370_mb_platform"
-
-For Windows Command Prompt or macOS/Linux, use:
-mvn spring-boot:run -Dspring-boot.run.arguments="--server.port=8081 --spring.datasource.url=jdbc:mysql://localhost:33307/csx370_mb_platform"
-
-Then open Chrome and log in again. The default commands below use the class
-server on port 33306; use the commands above for the separate demo server.
 
 COMPILE AND RUN
 ---------------
