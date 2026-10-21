@@ -124,5 +124,5 @@ public class Notification {
     public String getTargetUrl() {
         if (getIsFollow()) return "/profile/" + actor.getUserId();
         return postExists ? "/post/" + targetId : "";
-    }
-}
+    } //getTargetUrl
+} //Notification
