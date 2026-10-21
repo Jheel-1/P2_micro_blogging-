@@ -29,6 +29,9 @@ files
 Run commands from the folder containing pom.xml.
 
 cd "C:\path\to\extracted-project"
+
+
+
 FIRST-TIME DATABASE SETUP
 ------------------------
 Do this once. If you already loaded the demo data into this container,
@@ -53,6 +56,9 @@ skip to START THE WEBSITE.
    This loads the demo accounts, posts, and other sample data.
    Your old class database remains separate.
 
+
+
+
 START THE WEBSITE
 ------------------
 Open Docker Desktop. Stop any running website with Ctrl+C first.
@@ -64,6 +70,9 @@ Run these commands in the SAME PowerShell terminal, inside the project folder:
    $env:SPRING_DATASOURCE_URL = 'jdbc:mysql://localhost:33307/csx370_mb_platform'
    mvn spring-boot:run --% -Dspring-boot.run.arguments="--server.port=8081"
 
+
+
+
 Wait for the app to start, then open Chrome:
 http://localhost:8081/
 
@@ -71,11 +80,14 @@ Demo login:
 Username: alex
 Password: DemoPass123!
 
+
 You can also log in as maya, jordan, or sam with the same password.
 
 Leave the terminal open while using the website. Press Ctrl+C to stop it.
 Run the startup commands again in each new terminal, including the $env line.
 Do not repeat the database import.
+
+
 
 
 
