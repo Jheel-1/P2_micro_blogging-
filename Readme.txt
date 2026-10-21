@@ -13,15 +13,11 @@ Vishaka Venkatraman: Database design and the new non-trivial feature,
 notifications.
 
 Thamim Parvin: Profile pages for the logged-in user and other users.
-Also integrated and tested the completed Plan B
-version with the group's changes.
+
 
 Jessica Li: People page and bookmarks page.
 
-These are the group's assigned responsibilities. The Plan B branch also
-contains integration fixes and completion work across those parts. The
-commit history shows the changes; this list is not a claim that every line
-in a feature was written by only one person.
+
 
 WHAT IS INCLUDED
 ----------------
@@ -211,7 +207,3 @@ https://dev.mysql.com/doc/refman/8.0/en/time-zone-support.html
 Java 17 date/time conversion:
 https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/time/ZonedDateTime.html
 
-KEEPING THE DATABASE FILE UP TO DATE
-----------------------------------
-If the sample data changes, export the current rows from every table and
-replace the insert section in database_setup.sql so it matches the app.
