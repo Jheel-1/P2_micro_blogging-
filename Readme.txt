@@ -14,16 +14,13 @@ notifications.
 
 Thamim Parvin: Profile pages for the logged-in user and other users.
 
-
 Jessica Li: People page and bookmarks page.
 
 
-
-WHAT IS INCLUDED
+files
 ----------------
 - src/main: application code and pages.
-- database_setup.sql: the nine tables, keys, constraints, and demo inserts.
-  This is the required database file; a second database.sql is not needed.
+- database_setup.sql: nine tables, keys, constraints, and demo inserts.
 - dml.sql: application queries with simple explanations, parameters, and URLs.
 - src/test: unit tests and separate MySQL integration tests.
 
@@ -32,39 +29,39 @@ FIRST-TIME DATABASE SETUP
 ------------------------
 Run commands from the folder containing pom.xml.
 
-1. Start Docker Desktop.
+cd "C:\path\to\extracted-project"
 
-2. If your class MySQL container already exists, start it:
-   docker start mysql-server-x370
+Start Docker Desktop.
 
-3. Copy the setup file into the container:
-   docker cp database_setup.sql mysql-server-x370:/tmp/database_setup.sql
+docker start mysql-server-x370
 
-4. Open MySQL:
-   docker exec -it mysql-server-x370 mysql -u root -p
+Copy the setup file into the container:
+docker cp database_setup.sql mysql-server-x370:/tmp/database_setup.sql
 
-   For the demo container above, enter mysqlpass. At the mysql prompt run:
-   SOURCE /tmp/database_setup.sql;
+Open MySQL:
+docker exec -it mysql-server-x370 mysql -u root -p
+enter mysqlpass.
 
-   This creates csx370_mb_platform and inserts the demo rows into every table.
-   Run the full file once on a fresh database. It does not delete or replace
-   existing rows. If you already have group data, keep it and apply only the
-   missing table definitions; do not run the demo inserts over existing IDs.
+At the mysql prompt run:
+SOURCE /tmp/database_setup.sql;
 
-5. Type exit to leave MySQL.
+This creates csx370_mb_platform and inserts the demo rows into every table.
+
+USE csx370_mb_platform;
+SHOW TABLES;
+SELECT COUNT(*) AS number_of_posts FROM post;
+exit;
+
+Exit MySQL.
 
 The connection settings are in src/main/resources/application.properties.
 The supplied settings use localhost:33306, database csx370_mb_platform,
-username root, and the local classroom password mysqlpass.
-If your container uses different settings, change those values or set
-SPRING_DATASOURCE_URL, SPRING_DATASOURCE_USERNAME and
-SPRING_DATASOURCE_PASSWORD in the terminal before starting the app.
+username root, and the local password mysqlpass.
 
 COMPILE AND RUN
 ---------------
-Compile and run the unit tests:
    mvn clean test
-Build the application:
+
    mvn package
 
 Start from Windows PowerShell:
@@ -78,36 +75,15 @@ Start from macOS/Linux:
 
 Open Chrome at http://localhost:8081/
 
+register multiple credentials and interact with features if desired. 
 
-Stop the app with Ctrl+C in its terminal. The database container is separate.
 
-DEMO ACCOUNTS
--------------
-All four fictional demo accounts use the password DemoPass123!
-Usernames: alex, maya, jordan, sam.
-The final snapshot also contains demo_new_member (Taylor Morgan), registered
-during the demo with the same password. Some notifications are already read
-because the demo tested the read controls.
+Stop the app with Ctrl+C in its terminal. 
 
-Alex follows Maya. Alex's home page therefore contains Alex's and Maya's
-posts. Jordan's posts are visible on Jordan's profile, but do not appear in
-Alex's feed until Alex follows Jordan. Sam has no posts, so Sam's last post
-date is Unknown.
 
-Try these searches:
-   #database #study
-   #2025 #fireworks
 
-Every requested hashtag must be in a result. For example, a post with #2025
-but no #fireworks is excluded from the second search. Results show newest
-posts first. Hashtags ignore letter case and must be separated by spaces.
 
-Post and comment text cannot be empty and is limited to 400 characters.
-The profile button shows your own posts. Clicking a person's name opens
-that person's posts. Comments are shown oldest first. Bookmarks belong to
-the logged-in user and are ordered by the post date, not the date saved.
-
-NEW FEATURE: NOTIFICATIONS
+NEW FEATURE: NOTIFICATIONS!!
 --------------------------
 Open Notifications in the top navigation bar.
 
@@ -156,6 +132,38 @@ For FOLLOW it stores the follower's user ID. Because the target can belong
 to different tables, this column has no foreign key in the current schema.
 A missing target post shows as unavailable instead of a broken post link.
 
+
+
+
+
+
+DEMO ACCOUNTS
+-------------
+All four fictional demo accounts use the password DemoPass123!
+Usernames: alex, maya, jordan, sam.
+The final snapshot also contains demo_new_member (Taylor Morgan), registered
+during the demo with the same password. Some notifications are already read
+because the demo tested the read controls.
+
+Alex follows Maya. Alex's home page therefore contains Alex's and Maya's
+posts. Jordan's posts are visible on Jordan's profile, but do not appear in
+Alex's feed until Alex follows Jordan. Sam has no posts, so Sam's last post
+date is Unknown.
+
+Try these searches:
+   #database #study
+   #2025 #fireworks
+
+Every requested hashtag must be in a result. For example, a post with #2025
+but no #fireworks is excluded from the second search. Results show newest
+posts first. Hashtags ignore letter case and must be separated by spaces.
+
+Post and comment text cannot be empty and is limited to 400 characters.
+The profile button shows your own posts. Clicking a person's name opens
+that person's posts. Comments are shown oldest first. Bookmarks belong to
+the logged-in user and are ordered by the post date, not the date saved.
+
+
 DATABASE AND TIME
 -----------------
 The application sets each database connection's time zone to UTC.
@@ -175,7 +183,7 @@ TESTS
 mvn test runs the unit tests without MySQL.
 
 For integration tests, create a separate, empty database named
-csx370_profile_test in a test MySQL instance. Do not use your project database.
+csx370_profile_test in a test MySQL instance. Do not use project database.
 Set these variables in PowerShell, adjusting the port and test credentials:
    $env:PROFILE_TEST_JDBC_URL='jdbc:mysql://127.0.0.1:33307/csx370_profile_test?useSSL=false&allowPublicKeyRetrieval=true'
    $env:PROFILE_TEST_USER='root'
