@@ -178,25 +178,6 @@ A comment has its own ID, so one person can comment several times on a post.
 Deleting a user or post removes its dependent rows through ON DELETE CASCADE.
 The application has no delete-post or delete-account screen.
 
-TESTS
------
-mvn test runs the unit tests without MySQL.
-
-For integration tests, create a separate, empty database named
-csx370_profile_test in a test MySQL instance. Do not use project database.
-Set these variables in PowerShell, adjusting the port and test credentials:
-   $env:PROFILE_TEST_JDBC_URL='jdbc:mysql://127.0.0.1:33307/csx370_profile_test?useSSL=false&allowPublicKeyRetrieval=true'
-   $env:PROFILE_TEST_USER='root'
-   $env:PROFILE_TEST_PASSWORD='your-test-password'
-
-Then run:
-   mvn test "-Dtest=ProfileControllerTest,PostServiceTest,DisplayTimeTest,ProfileServiceIT,ApplicationFeaturesIT"
-
-The tests check author filtering, feed rules, ordering, viewer-specific
-states, hashtag searches, following, bookmarks, comments, notifications,
-read permissions, duplicate requests, and rollback after failed writes.
-They load the table definitions but not the demo seed rows. Use only an
-isolated test database, since the profile tests reserve IDs 9001-9004.
 
 RESOURCES CONSULTED
 -------------------
