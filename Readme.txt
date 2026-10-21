@@ -105,52 +105,32 @@ On later runs, start it with: docker start mysql-microblogging-demo
 
 COMPILE AND RUN
 ---------------
-Run commands from the project folder containing pom.xml. Start Docker Desktop.
-If the website is already running, press Ctrl+C in its terminal first.
+Use Windows PowerShell in the project folder containing pom.xml.
+These commands use the separate demo container on port 33307.
+If you used the class database setup instead, replace
+mysql-microblogging-demo with mysql-server-x370 and 33307 with 33306.
 
-Compile, run the unit tests, and build the application:
+1. Open Docker Desktop. Stop any running website with Ctrl+C.
+
+2. Build the project:
    mvn clean package
 
-WINDOWS POWERSHELL: Choose ONE of the two startup options below.
-Use the option matching the container where you imported database_setup.sql.
-Run all commands for your option in the SAME PowerShell terminal.
-
-Option A - Separate demo container (mysql-microblogging-demo, port 33307):
+3. Run these three commands in the SAME PowerShell window:
    docker start mysql-microblogging-demo
    $env:SPRING_DATASOURCE_URL = 'jdbc:mysql://localhost:33307/csx370_mb_platform'
    mvn spring-boot:run --% -Dspring-boot.run.arguments="--server.port=8081"
 
-Option B - Class container (mysql-server-x370, port 33306):
-   docker start mysql-server-x370
-   $env:SPRING_DATASOURCE_URL = 'jdbc:mysql://localhost:33306/csx370_mb_platform'
-   mvn spring-boot:run --% -Dspring-boot.run.arguments="--server.port=8081"
+4. Wait for the app to start. Open Chrome at http://localhost:8081/
+   Log in with username alex and password DemoPass123!
 
-The $env setting lasts only for that PowerShell session. Set it again when
-starting from a new terminal. Without it, the app defaults to port 33306,
-which may contain accounts from an earlier assignment.
+Leave the terminal open while using the website. Press Ctrl+C to stop it.
+When starting from a new terminal, repeat step 3, including the $env line.
+You do not need to import database_setup.sql again.
 
-WINDOWS COMMAND PROMPT:
-Start your chosen container with its docker start command above.
-These commands use the separate demo server. For the class server, change
-33307 to 33306 in the set command. Run both lines in the same terminal:
-   set "SPRING_DATASOURCE_URL=jdbc:mysql://localhost:33307/csx370_mb_platform"
-   mvn spring-boot:run -D"spring-boot.run.arguments=--server.port=8081"
-
-MACOS/LINUX:
-Start your chosen container with its docker start command above.
-These commands use the separate demo server. For the class server, change
-33307 to 33306 in the export command. Run both lines in the same terminal:
+On macOS/Linux, follow the same steps but replace the last two commands
+in step 3 with these (use 33306 if you chose the class database):
    export SPRING_DATASOURCE_URL='jdbc:mysql://localhost:33307/csx370_mb_platform'
    mvn spring-boot:run -Dspring-boot.run.arguments=--server.port=8081
-
-For any terminal, wait for the application to finish starting, then open
-Chrome at http://localhost:8081/ and log in again.
-Demo login: username alex, password DemoPass123!
-You can also register additional test accounts.
-
-Leave the application terminal open while using the website.
-Stop the app with Ctrl+C in that terminal.
-Database import is a one-time setup; do not repeat SOURCE on every startup.
 
 
 
