@@ -24,6 +24,8 @@ WHAT IS INCLUDED
 - src/main: application code and pages.
 - database_setup.sql: the nine tables, keys, constraints, and demo inserts.
   This is the required database file; a second database.sql is not needed.
+- schema-only-setup.sql: creates missing tables without inserting demo data
+  or changing existing accounts and rows.
 - dml.sql: application queries with simple explanations, parameters, and URLs.
 - src/test: unit tests and separate MySQL integration tests.
 
@@ -31,6 +33,8 @@ WHAT IS INCLUDED
 FIRST-TIME DATABASE SETUP
 ------------------------
 Run commands from the folder containing pom.xml.
+If you already registered an account or have project data, use the
+EXISTING DATABASE SETUP instructions below instead.
 
 1. Start Docker Desktop.
 
@@ -43,13 +47,14 @@ Run commands from the folder containing pom.xml.
 4. Open MySQL:
    docker exec -it mysql-server-x370 mysql -u root -p
 
-   For the demo container above, enter mysqlpass. At the mysql prompt run:
+   Enter your MySQL password (mysqlpass with the supplied settings).
+   At the mysql prompt run:
    SOURCE /tmp/database_setup.sql;
 
    This creates csx370_mb_platform and inserts the demo rows into every table.
    Run the full file once on a fresh database. It does not delete or replace
-   existing rows. If you already have group data, keep it and apply only the
-   missing table definitions; do not run the demo inserts over existing IDs.
+   existing rows. For an existing database, use schema-only-setup.sql;
+   do not run the demo inserts over existing IDs.
 
 5. Type exit to leave MySQL.
 
@@ -59,6 +64,32 @@ username root, and the local classroom password mysqlpass.
 If your container uses different settings, change those values or set
 SPRING_DATASOURCE_URL, SPRING_DATASOURCE_USERNAME and
 SPRING_DATASOURCE_PASSWORD in the terminal before starting the app.
+
+EXISTING DATABASE SETUP
+----------------------
+If login works but pages say they cannot load posts or people, check whether
+your database has all nine project tables. An older setup may have only user.
+To create missing tables and keep your existing accounts and data:
+
+1. Start Docker Desktop, then run these commands from the project folder:
+   docker start mysql-server-x370
+   docker cp schema-only-setup.sql mysql-server-x370:/tmp/schema-only-setup.sql
+   docker exec -it mysql-server-x370 mysql -u root -p
+
+2. Enter your MySQL password (mysqlpass with the supplied settings).
+   At the mysql prompt run:
+   SOURCE /tmp/schema-only-setup.sql;
+   SHOW TABLES;
+   exit;
+
+   You should see user, post, hashtag, post_hashtag, user_follow, comment,
+   likes, bookmarks, and notifications. Refresh the website afterward.
+
+This script inserts no sample users or posts. Existing accounts remain, and
+empty pages are normal until people add posts or follow other users.
+Both setup scripts create missing tables; they do not change the structure
+of tables that already exist. Pulling code from GitHub does not run SQL.
+If your container has a different name, use that name in these commands.
 
 COMPILE AND RUN
 ---------------
@@ -83,6 +114,9 @@ Stop the app with Ctrl+C in its terminal. The database container is separate.
 
 DEMO ACCOUNTS
 -------------
+These accounts exist only after loading the demo inserts in database_setup.sql.
+The schema-only script does not create them.
+
 All four fictional demo accounts use the password DemoPass123!
 Usernames: alex, maya, jordan, sam.
 The final snapshot also contains demo_new_member (Taylor Morgan), registered
