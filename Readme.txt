@@ -35,7 +35,7 @@ cd "C:\path\to\extracted-project"
 FIRST-TIME DATABASE SETUP
 ------------------------
 Do this once. If you already loaded the demo data into this container,
-skip to START THE WEBSITE.
+skip to START THE WEBSITE. (Graders Do This)
 
 1. Open Docker Desktop and create the demo container:
 
