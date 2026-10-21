@@ -110,7 +110,7 @@ COMPILE AND RUN
 ---------------
 Use Windows PowerShell in the project folder containing pom.xml.
 These commands use the separate demo container on port 33307.
-If you used the class database setup instead, replace
+If you used the "non-assignment" database setup instead, replace
 mysql-microblogging-demo with mysql-server-x370 and 33307 with 33306.
 
 1. Open Docker Desktop. Stop any running website with Ctrl+C.
