@@ -1,9 +1,4 @@
-MICROBLOGGING PLATFORM
-=====================
-
-This is a Java Spring Boot web application with a MySQL database.
-Users can write posts, follow people, search hashtags, like posts, leave
-comments, save bookmarks, and receive notifications.
+MICROBLOGGING Project
 
 GROUP MEMBERS AND RESPONSIBILITIES
 ----------------------------------
@@ -36,11 +31,6 @@ WHAT IS INCLUDED
 - dml.sql: application queries with simple explanations, parameters, and URLs.
 - src/test: unit tests and separate MySQL integration tests.
 
-REQUIREMENTS
-------------
-Use Java 17 or newer, Maven, Docker Desktop with Linux containers, and Chrome.
-The project uses the dependencies already in pom.xml. No new application
-libraries were added. MySQL 8.1 was used for verification.
 
 FIRST-TIME DATABASE SETUP
 ------------------------
