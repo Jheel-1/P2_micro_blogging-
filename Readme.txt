@@ -66,7 +66,9 @@ Run these commands in the SAME PowerShell terminal, inside the project folder:
 
    docker start mysql-microblogging-demo
    mvn clean package
+
    $env:SPRING_DATASOURCE_URL = 'jdbc:mysql://localhost:33307/csx370_mb_platform'
+
    mvn spring-boot:run --% -Dspring-boot.run.arguments="--server.port=8081"
 
 
