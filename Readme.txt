@@ -61,7 +61,6 @@ skip to START THE WEBSITE.
 
 START THE WEBSITE
 ------------------
-Open Docker Desktop. Stop any running website with Ctrl+C first.
 
 Run these commands in the SAME PowerShell terminal, inside the project folder:
 
