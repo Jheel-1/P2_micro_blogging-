@@ -65,6 +65,12 @@ The connection settings are in src/main/resources/application.properties.
 The supplied settings use localhost:33306, database csx370_mb_platform,
 username root, and the local password mysqlpass.
 
+
+OR**********************************
+
+
+
+
 SEPARATE DEMO SETUP IF YOU ALREADY HAVE OLD DATA FROM PREVIOUS ASSIGNMENT***
 ----------------------------------------------
 Keep your old database. Use this separate MySQL container for the demo.
@@ -87,6 +93,14 @@ exit;
 Expect alex, maya, jordan, sam, demo_new_member, and 8 posts.
 If this demo container already has those rows, skip the import.
 On later runs, start it with: docker start mysql-microblogging-demo
+
+
+
+
+
+
+
+
 
 
 COMPILE AND RUN
