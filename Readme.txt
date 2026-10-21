@@ -105,25 +105,52 @@ On later runs, start it with: docker start mysql-microblogging-demo
 
 COMPILE AND RUN
 ---------------
-   mvn clean test
+Run commands from the project folder containing pom.xml. Start Docker Desktop.
+If the website is already running, press Ctrl+C in its terminal first.
 
-   mvn package
+Compile, run the unit tests, and build the application:
+   mvn clean package
 
-Start from Windows PowerShell:
+WINDOWS POWERSHELL: Choose ONE of the two startup options below.
+Use the option matching the container where you imported database_setup.sql.
+Run all commands for your option in the SAME PowerShell terminal.
+
+Option A - Separate demo container (mysql-microblogging-demo, port 33307):
+   docker start mysql-microblogging-demo
+   $env:SPRING_DATASOURCE_URL = 'jdbc:mysql://localhost:33307/csx370_mb_platform'
    mvn spring-boot:run --% -Dspring-boot.run.arguments="--server.port=8081"
 
-Start from Windows Command Prompt:
+Option B - Class container (mysql-server-x370, port 33306):
+   docker start mysql-server-x370
+   $env:SPRING_DATASOURCE_URL = 'jdbc:mysql://localhost:33306/csx370_mb_platform'
+   mvn spring-boot:run --% -Dspring-boot.run.arguments="--server.port=8081"
+
+The $env setting lasts only for that PowerShell session. Set it again when
+starting from a new terminal. Without it, the app defaults to port 33306,
+which may contain accounts from an earlier assignment.
+
+WINDOWS COMMAND PROMPT:
+Start your chosen container with its docker start command above.
+These commands use the separate demo server. For the class server, change
+33307 to 33306 in the set command. Run both lines in the same terminal:
+   set "SPRING_DATASOURCE_URL=jdbc:mysql://localhost:33307/csx370_mb_platform"
    mvn spring-boot:run -D"spring-boot.run.arguments=--server.port=8081"
 
-Start from macOS/Linux:
+MACOS/LINUX:
+Start your chosen container with its docker start command above.
+These commands use the separate demo server. For the class server, change
+33307 to 33306 in the export command. Run both lines in the same terminal:
+   export SPRING_DATASOURCE_URL='jdbc:mysql://localhost:33307/csx370_mb_platform'
    mvn spring-boot:run -Dspring-boot.run.arguments=--server.port=8081
 
-Open Chrome at http://localhost:8081/
+For any terminal, wait for the application to finish starting, then open
+Chrome at http://localhost:8081/ and log in again.
+Demo login: username alex, password DemoPass123!
+You can also register additional test accounts.
 
-register multiple credentials and interact with features if desired. 
-
-
-Stop the app with Ctrl+C in its terminal. 
+Leave the application terminal open while using the website.
+Stop the app with Ctrl+C in that terminal.
+Database import is a one-time setup; do not repeat SOURCE on every startup.
 
 
 
