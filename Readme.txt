@@ -54,7 +54,7 @@ skip to START THE WEBSITE. (GRADERS DO THIS)
    exit;
 
    This loads the demo accounts, posts, and other sample data.
-   Your old class database remains separate.
+    (old class database remains separate)
 
 
 
